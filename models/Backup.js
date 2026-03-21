@@ -62,6 +62,5 @@ const BackupSchema = new Schema({
 }, { timestamps: true });
 
 BackupSchema.index({ guildId: 1 });
-BackupSchema.index({ backupId: 1 });
 
 module.exports = model('Backup', BackupSchema);
