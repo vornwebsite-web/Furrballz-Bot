@@ -15,6 +15,31 @@ module.exports = {
     .setName('invite')
     .setDescription('Invite tracker')
     .addSubcommand(s => s
+      .setName('altprotection')
+      .setDescription('Configure alt account protection')
+      .addStringOption(o => o.setName('action').setDescription('What to do with detected alts').setRequired(true)
+        .addChoices(
+          { name: 'Enable — Kick alts',       value: 'kick'  },
+          { name: 'Enable — Ban alts',        value: 'ban'   },
+          { name: 'Enable — Alert mods only', value: 'alert' },
+          { name: 'Disable',                  value: 'off'   },
+        ))
+      .addIntegerOption(o => o.setName('min_age_days').setDescription('Minimum account age in days (default 7)').setMinValue(1).setMaxValue(365))
+      .addChannelOption(o => o.setName('alert_channel').setDescription('Channel to send mod alerts (always used regardless of action)'))
+      .addBooleanOption(o => o.setName('block_no_avatar').setDescription('Also flag accounts with default avatar (no profile picture)')))
+
+    .addSubcommand(s => s
+      .setName('altexempt')
+      .setDescription('Exempt an inviter from alt checks (their invites skip alt protection)')
+      .addStringOption(o => o.setName('action').setDescription('add or remove').setRequired(true)
+        .addChoices({ name: 'Add exemption', value: 'add' }, { name: 'Remove exemption', value: 'remove' }))
+      .addUserOption(o => o.setName('user').setDescription('Inviter to exempt').setRequired(true)))
+
+    .addSubcommand(s => s
+      .setName('altstatus')
+      .setDescription('View current alt protection settings'))
+
+    .addSubcommand(s => s
       .setName('setup')
       .setDescription('Set the invite log channel for join notifications')
       .addChannelOption(o => o.setName('channel').setDescription('Channel for invite join messages').setRequired(true)))
@@ -64,6 +89,71 @@ module.exports = {
       await interaction.reply({ embeds: [success('Invite join notifications disabled.')], ephemeral: true });
     }
 
+    else if (sub === 'altprotection') {
+      if (!isManager(interaction.member)) return noPermission(interaction);
+      const action       = interaction.options.getString('action');
+      const minAge       = interaction.options.getInteger('min_age_days');
+      const alertChannel = interaction.options.getChannel('alert_channel');
+      const blockAvatar  = interaction.options.getBoolean('block_no_avatar');
+      const guildDoc     = await Guild.getOrCreate(interaction.guild.id);
+
+      if (action === 'off') {
+        guildDoc.altProtection.enabled = false;
+        await guildDoc.save();
+        return interaction.reply({ embeds: [success('Alt account protection **disabled**.')], ephemeral: true });
+      }
+
+      guildDoc.altProtection.enabled = true;
+      guildDoc.altProtection.action  = action;
+      if (minAge       !== null) guildDoc.altProtection.minAccountAgeDays  = minAge;
+      if (alertChannel)         guildDoc.altProtection.alertChannelId      = alertChannel.id;
+      if (blockAvatar  !== null) guildDoc.altProtection.blockDefaultAvatar = blockAvatar;
+      guildDoc.markModified('altProtection');
+      await guildDoc.save();
+
+      await interaction.reply({ embeds: [success([
+        `**Alt protection:** 🟢 Enabled`,
+        `**Action:** ${action === 'kick' ? '👢 Kick' : action === 'ban' ? '🔨 Ban' : '⚠️ Alert only'}`,
+        `**Min account age:** ${guildDoc.altProtection.minAccountAgeDays} days`,
+        `**Alert channel:** ${guildDoc.altProtection.alertChannelId ? `<#${guildDoc.altProtection.alertChannelId}>` : 'Not set'}`,
+        `**Block no-avatar accounts:** ${guildDoc.altProtection.blockDefaultAvatar ? 'Yes' : 'No'}`,
+      ].join('\n'), '🛡️ Alt Protection Updated')], ephemeral: true });
+    }
+
+    else if (sub === 'altexempt') {
+      if (!isManager(interaction.member)) return noPermission(interaction);
+      const action   = interaction.options.getString('action');
+      const user     = interaction.options.getUser('user');
+      const guildDoc = await Guild.getOrCreate(interaction.guild.id);
+
+      if (action === 'add') {
+        if (!guildDoc.altProtection.ignoreInviterId.includes(user.id)) {
+          guildDoc.altProtection.ignoreInviterId.push(user.id);
+          guildDoc.markModified('altProtection');
+          await guildDoc.save();
+        }
+        await interaction.reply({ embeds: [success(`<@${user.id}> is now **exempt** from alt protection.\nUsers they invite will skip the alt check.`)], ephemeral: true });
+      } else {
+        guildDoc.altProtection.ignoreInviterId = guildDoc.altProtection.ignoreInviterId.filter(id => id !== user.id);
+        guildDoc.markModified('altProtection');
+        await guildDoc.save();
+        await interaction.reply({ embeds: [success(`<@${user.id}> exemption **removed**. Their invites will now be subject to alt checks.`)], ephemeral: true });
+      }
+    }
+
+    else if (sub === 'altstatus') {
+      const guildDoc = await Guild.getOrCreate(interaction.guild.id);
+      const cfg      = guildDoc.altProtection;
+      await interaction.reply({ embeds: [info([
+        `**Enabled:** ${cfg.enabled ? '🟢 Yes' : '🔴 No'}`,
+        `**Action:** ${cfg.action === 'kick' ? '👢 Kick' : cfg.action === 'ban' ? '🔨 Ban' : '⚠️ Alert only'}`,
+        `**Min account age:** ${cfg.minAccountAgeDays} days`,
+        `**Block no-avatar:** ${cfg.blockDefaultAvatar ? 'Yes' : 'No'}`,
+        `**Alert channel:** ${cfg.alertChannelId ? `<#${cfg.alertChannelId}>` : 'Not set'}`,
+        `**Exempt inviters:** ${cfg.ignoreInviterId.length > 0 ? cfg.ignoreInviterId.map(id => `<@${id}>`).join(', ') : 'None'}`,
+      ].join('\n'), '🛡️ Alt Protection Status')], ephemeral: true });
+    }
+
     else if (sub === 'create') {
       const channel  = interaction.options.getChannel('channel') || interaction.channel;
       const maxUses  = interaction.options.getInteger('max_uses') ?? 0;
@@ -107,8 +197,8 @@ module.exports = {
     else if (sub === 'leaderboard') {
       const lb = await inviteTrackerService.getLeaderboard(interaction.guild.id, 20);
       if (!lb.length) return interaction.reply({ embeds: [info('No invite data yet.')], ephemeral: true });
-      const lines = lb.map((i, idx) => `${ordinal(idx + 1)}. <@${i.inviterId || 'Unknown'}> — \`${i.inviteCode}\` — **${number(i.uses)}** uses`);
-      await paginate(interaction, [neutral(lines.join('\n'), 'Invite Leaderboard')]);
+      const lines = lb.map((i, idx) => `${ordinal(idx + 1)}. <@${i.inviterId}> — **${i.realUses}** real invite${i.realUses === 1 ? '' : 's'} *(${i.rawUses} total)*`);
+      await paginate(interaction, [neutral(lines.join('\n'), '📨 Invite Leaderboard\n*Real invites = members currently in server*')]);
     }
 
     else if (sub === 'purge') {
