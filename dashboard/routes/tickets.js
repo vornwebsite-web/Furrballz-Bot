@@ -20,7 +20,7 @@ router.get('/:guildId/tickets', requireAuth, requireGuildAccess, async (req, res
       TicketConfig.getOrCreate(guild.id),
     ]);
 
-    const channels = guild.channels.cache
+    const channels = [...guild.channels.cache.values()]
       .filter(c => c.isTextBased())
       .map(c => ({ id: c.id, name: c.name }))
       .sort((a, b) => a.name.localeCompare(b.name));
