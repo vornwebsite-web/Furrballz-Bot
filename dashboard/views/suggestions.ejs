@@ -1,1 +1,43 @@
+<%- include('partials/head') %>
 
+<div class="tabs">
+  <a href="?status=pending"  class="tab <%= status==='pending' ?'active':'' %>">Pending</a>
+  <a href="?status=approved" class="tab <%= status==='approved'?'active':'' %>">Approved</a>
+  <a href="?status=denied"   class="tab <%= status==='denied'  ?'active':'' %>">Denied</a>
+</div>
+
+<div class="card">
+  <div class="card-header"><%= status.charAt(0).toUpperCase()+status.slice(1) %> Suggestions <span class="badge"><%= docs.length %></span></div>
+  <div class="card-body p-0">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Author</th>
+          <th>Content</th>
+          <th>Votes</th>
+          <th>Date</th>
+          <% if (status==='pending') { %><th>Actions</th><% } %>
+        </tr>
+      </thead>
+      <tbody>
+        <% docs.forEach(function(d) { %>
+        <tr>
+          <td><code><%= d.authorId %></code></td>
+          <td><%= d.content.slice(0,80) %></td>
+          <td>👍 <%= d.upvotes %> / 👎 <%= d.downvotes %></td>
+          <td><%= new Date(d.createdAt).toLocaleDateString() %></td>
+          <% if (status==='pending') { %>
+          <td>
+            <button class="btn btn-sm btn-success" onclick="reviewSuggestion('<%= guild.id %>','<%= d._id %>','approve',this)">Approve</button>
+            <button class="btn btn-sm btn-danger"  onclick="reviewSuggestion('<%= guild.id %>','<%= d._id %>','deny',this)">Deny</button>
+          </td>
+          <% } %>
+        </tr>
+        <% }); %>
+        <% if (!docs.length) { %><tr><td colspan="5" class="empty-row">No suggestions.</td></tr><% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<%- include('partials/foot') %>
