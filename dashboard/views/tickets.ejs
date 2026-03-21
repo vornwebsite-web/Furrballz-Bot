@@ -1,1 +1,66 @@
+<%- include('partials/head') %>
 
+<div class="tabs">
+  <a href="?status=open"    class="tab <%= status==='open'   ?'active':'' %>">Open</a>
+  <a href="?status=claimed" class="tab <%= status==='claimed'?'active':'' %>">Claimed</a>
+  <a href="?status=closed"  class="tab <%= status==='closed' ?'active':'' %>">Closed</a>
+  <a href="?status=all"     class="tab <%= status==='all'    ?'active':'' %>">All</a>
+</div>
+
+<div class="card">
+  <div class="card-header">Tickets <span class="badge"><%= total %> total</span></div>
+  <div class="card-body p-0">
+    <table class="table">
+      <thead><tr><th>ID</th><th>Category</th><th>Opened by</th><th>Claimer</th><th>Status</th><th>Date</th></tr></thead>
+      <tbody>
+        <% tickets.forEach(function(t) { %>
+        <tr>
+          <td><code><%= t.ticketId %></code></td>
+          <td><%= t.category %></td>
+          <td><code><%= t.openerId %></code></td>
+          <td><code><%= t.claimerId || '—' %></code></td>
+          <td><span class="badge badge-<%= t.status==='open'?'success':t.status==='claimed'?'info':'muted' %>"><%= t.status %></span></td>
+          <td><%= new Date(t.createdAt).toLocaleDateString() %></td>
+        </tr>
+        <% }); %>
+        <% if (!tickets.length) { %><tr><td colspan="6" class="empty-row">No tickets found.</td></tr><% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card" style="margin-top:1.5rem">
+  <div class="card-header">Ticket Config</div>
+  <form class="card-body form-grid" id="ticket-config-form">
+    <div class="form-group">
+      <label>Log Channel</label>
+      <select name="logChannelId">
+        <option value="">None</option>
+        <% channels.forEach(function(c) { %>
+        <option value="<%= c.id %>" <%= cfg.logChannelId===c.id?'selected':'' %>>#<%= c.name %></option>
+        <% }); %>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Max Open Tickets per User</label>
+      <input type="number" name="maxOpenPerUser" value="<%= cfg.maxOpenPerUser %>" min="1" max="5">
+    </div>
+    <div class="form-group">
+      <label>Panel Title</label>
+      <input type="text" name="panelTitle" value="<%= cfg.panelTitle||'Support Tickets' %>">
+    </div>
+    <div class="form-group span-2">
+      <label>Panel Description</label>
+      <textarea name="panelDescription" rows="2"><%= cfg.panelDescription||'' %></textarea>
+    </div>
+    <div class="form-group">
+      <label>Auto-Close After (hours, 0 = off)</label>
+      <input type="number" name="autoCloseHours" value="<%= cfg.autoCloseHours||0 %>" min="0">
+    </div>
+    <div class="form-actions span-2">
+      <button type="button" class="btn btn-primary" onclick="saveTicketConfig('<%= guild.id %>')">Save Changes</button>
+    </div>
+  </form>
+</div>
+
+<%- include('partials/foot') %>
