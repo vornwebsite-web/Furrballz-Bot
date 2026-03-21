@@ -1,60 +1,67 @@
 <%- include('partials/head') %>
 
-<form id="levels-form">
-<div class="card">
-  <div class="card-header">Leveling Configuration</div>
-  <div class="card-body form-grid">
-    <div class="form-group">
-      <label>Status</label>
-      <select name="enabled">
-        <option value="true"  <%= guildDoc.leveling.enabled?'selected':'' %>>Enabled</option>
-        <option value="false" <%= !guildDoc.leveling.enabled?'selected':'' %>>Disabled</option>
-      </select>
+<div class="row">
+  <div class="col">
+    <form id="levels-form">
+    <div class="card">
+      <div class="card-header"><span class="card-header-icon">⬆️</span> Leveling Configuration</div>
+      <div class="card-body form-grid">
+        <div class="form-group">
+          <label>Status</label>
+          <select name="enabled">
+            <option value="true"  <%= guildDoc.leveling.enabled?'selected':'' %>>🟢 Enabled</option>
+            <option value="false" <%= !guildDoc.leveling.enabled?'selected':'' %>>🔴 Disabled</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Announce Channel</label>
+          <select name="announceChannel">
+            <option value="">Same channel as message</option>
+            <% channels.forEach(function(c) { %>
+            <option value="<%= c.id %>" <%= guildDoc.leveling.announceChannel===c.id?'selected':'' %>>#<%= c.name %></option>
+            <% }); %>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Min XP per message</label>
+          <input type="number" name="xpMin" value="<%= guildDoc.leveling.xpMin||15 %>" min="1" max="100">
+        </div>
+        <div class="form-group">
+          <label>Max XP per message</label>
+          <input type="number" name="xpMax" value="<%= guildDoc.leveling.xpMax||40 %>" min="1" max="200">
+        </div>
+        <div class="form-group span-2">
+          <label>XP Cooldown (ms)</label>
+          <input type="number" name="xpCooldown" value="<%= guildDoc.leveling.xpCooldown||60000 %>" min="1000">
+        </div>
+      </div>
+      <div class="card-footer">
+        <button type="button" class="btn btn-primary" onclick="saveForm('levels-form','/guild/<%= guild.id %>/levels')">Save Changes</button>
+      </div>
     </div>
-    <div class="form-group">
-      <label>Announce Channel</label>
-      <select name="announceChannel">
-        <option value="">Same channel as message</option>
-        <% channels.forEach(function(c) { %>
-        <option value="<%= c.id %>" <%= guildDoc.leveling.announceChannel===c.id?'selected':'' %>>#<%= c.name %></option>
-        <% }); %>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>Min XP per message</label>
-      <input type="number" name="xpMin" value="<%= guildDoc.leveling.xpMin||15 %>" min="1" max="100">
-    </div>
-    <div class="form-group">
-      <label>Max XP per message</label>
-      <input type="number" name="xpMax" value="<%= guildDoc.leveling.xpMax||40 %>" min="1" max="200">
-    </div>
-    <div class="form-group">
-      <label>XP Cooldown (ms)</label>
-      <input type="number" name="xpCooldown" value="<%= guildDoc.leveling.xpCooldown||60000 %>" min="1000">
-    </div>
-  </div>
-  <div class="card-footer">
-    <button type="button" class="btn btn-primary" onclick="saveForm('levels-form','/guild/<%= guild.id %>/levels')">Save Changes</button>
+    </form>
   </div>
 </div>
-</form>
 
-<div class="card" style="margin-top:1.5rem">
-  <div class="card-header">XP Leaderboard <span class="badge"><%= leaderboard.length %> users</span></div>
+<div class="card">
+  <div class="card-header">
+    <span class="card-header-icon">🏆</span> XP Leaderboard
+    <span class="badge badge-accent" style="margin-left:auto"><%= leaderboard.length %> users</span>
+  </div>
   <div class="card-body p-0">
     <table class="table">
-      <thead><tr><th>#</th><th>User ID</th><th>Level</th><th>XP</th><th>Actions</th></tr></thead>
+      <thead><tr><th>#</th><th>User ID</th><th>Level</th><th>XP</th><th></th></tr></thead>
       <tbody>
         <% leaderboard.forEach(function(u, i) { %>
         <tr>
-          <td><%= i+1 %></td>
+          <td><strong style="color:<%= i===0?'#FFD700':i===1?'#C0C0C0':i===2?'#CD7F32':'var(--text-muted)' %>"><%= i===0?'🥇':i===1?'🥈':i===2?'🥉':`#${i+1}` %></strong></td>
           <td><code><%= u.userId %></code></td>
-          <td><%= u.level %></td>
-          <td><%= u.xp.toLocaleString() %></td>
-          <td><button class="btn btn-sm btn-danger" onclick="resetXP('<%= guild.id %>','<%= u.userId %>',this)">Reset</button></td>
+          <td><span class="badge badge-accent">Lvl <%= u.level %></span></td>
+          <td><%= u.xp.toLocaleString() %> XP</td>
+          <td><button class="btn btn-xs btn-danger" onclick="resetXP('<%= guild.id %>','<%= u.userId %>',this)">Reset</button></td>
         </tr>
         <% }); %>
-        <% if (!leaderboard.length) { %><tr><td colspan="5" class="empty-row">No leveling data.</td></tr><% } %>
+        <% if (!leaderboard.length) { %><tr><td colspan="5" class="empty-row">No leveling data yet.</td></tr><% } %>
       </tbody>
     </table>
   </div>
