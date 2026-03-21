@@ -17,11 +17,22 @@ router.post('/:guildId/welcome', requireAuth, requireGuildAccess, async (req, re
     const { guildDoc } = req;
     const cfg = guildDoc.welcome;
     const b   = req.body;
-    cfg.enabled   = b.enabled   === 'true';
-    cfg.channelId = b.channelId || null;
-    cfg.message   = b.message   || 'Welcome {user} to **{server}**!';
-    cfg.dmMessage = b.dmMessage || null;
-    cfg.roleId    = b.roleId    || null;
+
+    // Welcome settings
+    if (b.enabled    !== undefined) cfg.enabled   = b.enabled   === 'true';
+    if (b.channelId  !== undefined) cfg.channelId = b.channelId || null;
+    if (b.message    !== undefined) cfg.message   = b.message   || 'Welcome {user} to **{server}**!';
+    if (b.dmMessage  !== undefined) cfg.dmMessage = b.dmMessage || null;
+    if (b.roleId     !== undefined) cfg.roleId    = b.roleId    || null;
+
+    // Invite log channel
+    if (b.inviteLogChannelId !== undefined) guildDoc.inviteLogChannelId = b.inviteLogChannelId || null;
+
+    // Boost settings
+    if (b.boostChannelId !== undefined) guildDoc.boostChannelId = b.boostChannelId || null;
+    if (b.boostRoleId    !== undefined) guildDoc.boostRoleId    = b.boostRoleId    || null;
+    if (b.boostMessage   !== undefined) guildDoc.boostMessage   = b.boostMessage   || null;
+
     await guildDoc.save();
     res.json({ success: true });
   } catch (err) { res.json({ success: false, error: err.message }); }
