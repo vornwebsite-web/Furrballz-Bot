@@ -1,5 +1,13 @@
 <%- include('partials/head') %>
 
+<div class="tabs">
+  <button class="tab active" data-tab="welcome">Welcome</button>
+  <button class="tab" data-tab="invites">Invite Tracker</button>
+  <button class="tab" data-tab="boost">Boost</button>
+</div>
+
+<!-- ── Welcome ──────────────────────────────────────────────────────────────── -->
+<div class="tab-panel active" id="tab-welcome">
 <form id="welcome-form">
 <div class="card">
   <div class="card-header">Welcome Message</div>
@@ -43,5 +51,108 @@
   </div>
 </div>
 </form>
+</div>
+
+<!-- ── Invite Tracker ────────────────────────────────────────────────────────── -->
+<div class="tab-panel" id="tab-invites">
+<form id="invite-form">
+<div class="card">
+  <div class="card-header">Invite Join Notifications</div>
+  <div class="card-body form-grid">
+    <div class="form-group span-2">
+      <p class="form-hint">When a member joins, the bot will post a message showing who invited them and the inviter's total invite count — just like the screenshot. Set the channel below to enable it.</p>
+    </div>
+    <div class="form-group span-2">
+      <label>Invite Log Channel</label>
+      <select name="inviteLogChannelId">
+        <option value="">Disabled</option>
+        <% channels.forEach(function(c) { %>
+        <option value="<%= c.id %>" <%= guildDoc.inviteLogChannelId===c.id?'selected':'' %>>#<%= c.name %></option>
+        <% }); %>
+      </select>
+    </div>
+    <div class="form-group span-2">
+      <div class="card" style="border-color:var(--border);background:var(--bg-raised)">
+        <div class="card-body">
+          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:8px">Example notification:</p>
+          <div style="background:var(--bg-base);border-radius:var(--radius-md);padding:12px;font-size:13px">
+            <strong style="color:var(--accent)">Furrballz Bot™</strong>
+            <span style="color:var(--text-muted);font-size:11px;margin-left:6px">Today at 17:39</span><br>
+            <span style="color:var(--text-primary)">@NewUser has been invited by @Inviter and has now <strong>5 invites</strong>.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer">
+    <button type="button" class="btn btn-primary" onclick="saveInviteLog('<%= guild.id %>')">Save Changes</button>
+  </div>
+</div>
+</form>
+</div>
+
+<!-- ── Boost ─────────────────────────────────────────────────────────────────── -->
+<div class="tab-panel" id="tab-boost">
+<form id="boost-form">
+<div class="card">
+  <div class="card-header">Boost Announcements</div>
+  <div class="card-body form-grid">
+    <div class="form-group">
+      <label>Boost Announcement Channel</label>
+      <select name="boostChannelId">
+        <option value="">Disabled</option>
+        <% channels.forEach(function(c) { %>
+        <option value="<%= c.id %>" <%= guildDoc.boostChannelId===c.id?'selected':'' %>>#<%= c.name %></option>
+        <% }); %>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Boost Reward Role <small>Assigned when member boosts, removed when they stop</small></label>
+      <select name="boostRoleId">
+        <option value="">None</option>
+        <% roles.forEach(function(r) { %>
+        <option value="<%= r.id %>" <%= guildDoc.boostRoleId===r.id?'selected':'' %>><%= r.name %></option>
+        <% }); %>
+      </select>
+    </div>
+    <div class="form-group span-2">
+      <label>Boost Message <small>Variables: {user} {username} {server} {count}</small></label>
+      <input type="text" name="boostMessage" value="<%= guildDoc.boostMessage || '{user} just boosted **{server}**! 💎 We now have **{count}** boosts!' %>">
+    </div>
+  </div>
+  <div class="card-footer">
+    <button type="button" class="btn btn-primary" onclick="saveBoost('<%= guild.id %>')">Save Changes</button>
+  </div>
+</div>
+</form>
+</div>
+
+<script>
+async function saveInviteLog(guildId) {
+  const channelId = document.querySelector('#invite-form select[name="inviteLogChannelId"]').value;
+  try {
+    const res  = await fetch('/guild/' + guildId + '/welcome', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ inviteLogChannelId: channelId }),
+    });
+    const json = await res.json();
+    toast(json.success ? 'Invite log channel saved!' : (json.error||'Error'), json.success ? 'success' : 'error');
+  } catch { toast('Network error.', 'error'); }
+}
+
+async function saveBoost(guildId) {
+  const channelId   = document.querySelector('#boost-form select[name="boostChannelId"]').value;
+  const roleId      = document.querySelector('#boost-form select[name="boostRoleId"]').value;
+  const message     = document.querySelector('#boost-form input[name="boostMessage"]').value;
+  try {
+    const res  = await fetch('/guild/' + guildId + '/welcome', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ boostChannelId: channelId, boostRoleId: roleId, boostMessage: message }),
+    });
+    const json = await res.json();
+    toast(json.success ? 'Boost settings saved!' : (json.error||'Error'), json.success ? 'success' : 'error');
+  } catch { toast('Network error.', 'error'); }
+}
+</script>
 
 <%- include('partials/foot') %>
