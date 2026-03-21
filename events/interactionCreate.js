@@ -52,10 +52,47 @@ module.exports = {
       );
       if (remaining > 0) return onCooldown(interaction, remaining);
 
+      // Build sub-command string for logging
+      let subCmd = '';
+      try {
+        const sub = interaction.options.getSubcommand(false);
+        if (sub) subCmd = ` ${sub}`;
+      } catch { /* no subcommand */ }
+
+      const fullCmd = `/${interaction.commandName}${subCmd}`;
+      const logCtx  = interaction.guild
+        ? `[${interaction.guild.name}] #${interaction.channel?.name || '?'}`
+        : '[DM]';
+
       try {
         await command.execute(interaction, client);
+
+        // ── Command usage log ──────────────────────────────────────────────────
+        logger.info(`[CMD] ${fullCmd} • ${interaction.user.tag} (${interaction.user.id}) • ${logCtx}`);
+
+        // ── Log to Discord mod-log channel if configured ───────────────────────
+        if (interaction.guild) {
+          try {
+            const Guild    = require('../models/Guild');
+            const logService = require('../services/logService');
+            const guildDoc = await Guild.findOne({ guildId: interaction.guild.id });
+            const channelId = guildDoc?.logChannels?.modAction;
+            if (channelId) {
+              await logService.send(client, channelId, {
+                type:  'commandUse',
+                color: 'info',
+                title: 'Command Used',
+                fields: [
+                  { name: 'Command',  value: `\`${fullCmd}\``,                          inline: true  },
+                  { name: 'User',     value: `<@${interaction.user.id}> (${interaction.user.tag})`, inline: true },
+                  { name: 'Channel',  value: `<#${interaction.channel?.id}>`,           inline: true  },
+                ],
+              });
+            }
+          } catch { /* log failure never crashes command */ }
+        }
       } catch (err) {
-        logger.error(`[Command] /${interaction.commandName} threw: ${err.message}`);
+        logger.error(`[CMD] FAIL ${fullCmd} • ${interaction.user.tag} • ${err.message}`);
         logger.error(err.stack);
         await unknownError(interaction);
       }
