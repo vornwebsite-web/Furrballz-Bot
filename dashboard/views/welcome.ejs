@@ -1,22 +1,21 @@
 <%- include('partials/head') %>
 
 <div class="tabs">
-  <button class="tab active" data-tab="welcome">Welcome</button>
-  <button class="tab" data-tab="invites">Invite Tracker</button>
-  <button class="tab" data-tab="boost">Boost</button>
+  <button class="tab active" data-tab="welcome">👋 Welcome</button>
+  <button class="tab" data-tab="invites">📨 Invite Tracker</button>
+  <button class="tab" data-tab="boost">💎 Boost</button>
 </div>
 
-<!-- ── Welcome ──────────────────────────────────────────────────────────────── -->
 <div class="tab-panel active" id="tab-welcome">
 <form id="welcome-form">
 <div class="card">
-  <div class="card-header">Welcome Message</div>
+  <div class="card-header"><span class="card-header-icon">👋</span> Welcome Message</div>
   <div class="card-body form-grid">
     <div class="form-group">
       <label>Status</label>
       <select name="enabled">
-        <option value="true"  <%= guildDoc.welcome.enabled?'selected':'' %>>Enabled</option>
-        <option value="false" <%= !guildDoc.welcome.enabled?'selected':'' %>>Disabled</option>
+        <option value="true"  <%= guildDoc.welcome.enabled?'selected':'' %>>🟢 Enabled</option>
+        <option value="false" <%= !guildDoc.welcome.enabled?'selected':'' %>>🔴 Disabled</option>
       </select>
     </div>
     <div class="form-group">
@@ -43,7 +42,7 @@
     </div>
     <div class="form-group span-2">
       <label>DM Message <small>Leave empty to disable</small></label>
-      <textarea name="dmMessage" rows="2"><%= guildDoc.welcome.dmMessage||'' %></textarea>
+      <textarea name="dmMessage" rows="2" placeholder="Leave empty to disable DM welcome..."><%= guildDoc.welcome.dmMessage||'' %></textarea>
     </div>
   </div>
   <div class="card-footer">
@@ -53,14 +52,13 @@
 </form>
 </div>
 
-<!-- ── Invite Tracker ────────────────────────────────────────────────────────── -->
 <div class="tab-panel" id="tab-invites">
 <form id="invite-form">
 <div class="card">
-  <div class="card-header">Invite Join Notifications</div>
+  <div class="card-header"><span class="card-header-icon">📨</span> Invite Join Notifications</div>
   <div class="card-body form-grid">
     <div class="form-group span-2">
-      <p class="form-hint">When a member joins, the bot will post a message showing who invited them and the inviter's total invite count — just like the screenshot. Set the channel below to enable it.</p>
+      <p class="form-hint">When a member joins, post who invited them and the inviter's total invite count.</p>
     </div>
     <div class="form-group span-2">
       <label>Invite Log Channel</label>
@@ -72,15 +70,10 @@
       </select>
     </div>
     <div class="form-group span-2">
-      <div class="card" style="border-color:var(--border);background:var(--bg-raised)">
-        <div class="card-body">
-          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:8px">Example notification:</p>
-          <div style="background:var(--bg-base);border-radius:var(--radius-md);padding:12px;font-size:13px">
-            <strong style="color:var(--accent)">Furrballz Bot™</strong>
-            <span style="color:var(--text-muted);font-size:11px;margin-left:6px">Today at 17:39</span><br>
-            <span style="color:var(--text-primary)">@NewUser has been invited by @Inviter and has now <strong>5 invites</strong>.</span>
-          </div>
-        </div>
+      <div style="background:var(--bg-raised);border:1px solid var(--border);border-radius:var(--radius-md);padding:14px 18px;">
+        <p style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Preview</p>
+        <p style="font-size:13px;color:var(--text-primary)"><strong style="color:var(--accent)">Furrballz Bot™</strong> <span style="font-size:11px;color:var(--text-muted)">Today at 17:39</span></p>
+        <p style="font-size:13px;margin-top:4px">@NewUser has been invited by @Inviter and has now <strong>5 invites</strong>.</p>
       </div>
     </div>
   </div>
@@ -91,11 +84,10 @@
 </form>
 </div>
 
-<!-- ── Boost ─────────────────────────────────────────────────────────────────── -->
 <div class="tab-panel" id="tab-boost">
 <form id="boost-form">
 <div class="card">
-  <div class="card-header">Boost Announcements</div>
+  <div class="card-header"><span class="card-header-icon">💎</span> Boost Announcements</div>
   <div class="card-body form-grid">
     <div class="form-group">
       <label>Boost Announcement Channel</label>
@@ -107,7 +99,7 @@
       </select>
     </div>
     <div class="form-group">
-      <label>Boost Reward Role <small>Assigned when member boosts, removed when they stop</small></label>
+      <label>Boost Reward Role <small>Auto-assigned when someone boosts</small></label>
       <select name="boostRoleId">
         <option value="">None</option>
         <% roles.forEach(function(r) { %>
@@ -130,28 +122,17 @@
 <script>
 async function saveInviteLog(guildId) {
   const channelId = document.querySelector('#invite-form select[name="inviteLogChannelId"]').value;
-  try {
-    const res  = await fetch('/guild/' + guildId + '/welcome', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ inviteLogChannelId: channelId }),
-    });
-    const json = await res.json();
-    toast(json.success ? 'Invite log channel saved!' : (json.error||'Error'), json.success ? 'success' : 'error');
-  } catch { toast('Network error.', 'error'); }
+  const res  = await fetch('/guild/'+guildId+'/welcome',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({inviteLogChannelId:channelId})});
+  const json = await res.json();
+  toast(json.success?'Saved!':json.error||'Error',json.success?'success':'error');
 }
-
 async function saveBoost(guildId) {
-  const channelId   = document.querySelector('#boost-form select[name="boostChannelId"]').value;
-  const roleId      = document.querySelector('#boost-form select[name="boostRoleId"]').value;
-  const message     = document.querySelector('#boost-form input[name="boostMessage"]').value;
-  try {
-    const res  = await fetch('/guild/' + guildId + '/welcome', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ boostChannelId: channelId, boostRoleId: roleId, boostMessage: message }),
-    });
-    const json = await res.json();
-    toast(json.success ? 'Boost settings saved!' : (json.error||'Error'), json.success ? 'success' : 'error');
-  } catch { toast('Network error.', 'error'); }
+  const channelId = document.querySelector('#boost-form select[name="boostChannelId"]').value;
+  const roleId    = document.querySelector('#boost-form select[name="boostRoleId"]').value;
+  const message   = document.querySelector('#boost-form input[name="boostMessage"]').value;
+  const res  = await fetch('/guild/'+guildId+'/welcome',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({boostChannelId:channelId,boostRoleId:roleId,boostMessage:message})});
+  const json = await res.json();
+  toast(json.success?'Saved!':json.error||'Error',json.success?'success':'error');
 }
 </script>
 
