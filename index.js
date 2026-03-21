@@ -147,9 +147,9 @@ process.on('SIGINT', async () => {
   logger.info('[Boot] Discord login successful');
 
   // ── Auto-register slash commands ───────────────────────────────────────────
-  // Runs on every boot — Discord deduplicates unchanged commands automatically
   try {
-    const { REST, Routes } = require('@discordjs/rest');
+    const { REST } = require('@discordjs/rest');
+    const { Routes } = require('discord-api-types/v10');
     const commandsPath = path.join(__dirname, 'commands');
     const commandFiles = fs.readdirSync(commandsPath).filter(f => f.endsWith('.js'));
     const body = [];
@@ -164,7 +164,6 @@ process.on('SIGINT', async () => {
     logger.info(`[Deploy] Registered ${body.length} slash commands globally.`);
   } catch (err) {
     logger.warn(`[Deploy] Command registration failed: ${err.message}`);
-    // Non-fatal — bot still runs, just commands may be stale
   }
 })();
 
