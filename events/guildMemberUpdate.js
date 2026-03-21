@@ -3,6 +3,7 @@
 // ── Copyright 2026 Furrballz Bot™ — TheFurrballz Hotel ───────────────────────
 
 const { Events } = require('discord.js');
+const logger           = require('../utils/logger');
 const logService       = require('../services/logService');
 const antiNukeService  = require('../services/antiNukeService');
 const Guild            = require('../models/Guild');
@@ -17,17 +18,65 @@ module.exports = {
     const wasBooster = oldMember.premiumSince;
     const isBooster  = newMember.premiumSince;
 
-    if (!wasBooster && isBooster && guild.boostChannelId && guild.boostMessage) {
-      try {
-        const channel = newMember.guild.channels.cache.get(guild.boostChannelId);
-        if (channel) {
-          const msg = guild.boostMessage
-            .replace('{user}', `<@${newMember.id}>`)
-            .replace('{username}', newMember.user.username)
-            .replace('{server}', newMember.guild.name);
-          await channel.send({ content: msg });
+    if (!wasBooster && isBooster) {
+      // Assign boost role if configured
+      if (guild.boostRoleId) {
+        try {
+          const boostRole = newMember.guild.roles.cache.get(guild.boostRoleId);
+          if (boostRole && !newMember.roles.cache.has(boostRole.id)) {
+            await newMember.roles.add(boostRole, 'Server boost reward');
+          }
+        } catch (err) {
+          logger.warn(`[GuildMemberUpdate] Boost role assign error: ${err.message}`);
         }
-      } catch { /* ignore */ }
+      }
+
+      // Send boost announcement if channel configured
+      if (guild.boostChannelId) {
+        try {
+          const channel = newMember.guild.channels.cache.get(guild.boostChannelId);
+          if (channel) {
+            const { buildEmbed } = require('../utils/embedBuilder');
+            const boostCount = newMember.guild.premiumSubscriptionCount;
+            const boostTier  = newMember.guild.premiumTier;
+
+            const embed = buildEmbed({
+              type:        'boost',
+              title:       '💎 New Server Boost!',
+              description: guild.boostMessage
+                ? guild.boostMessage
+                    .replace('{user}',     `<@${newMember.id}>`)
+                    .replace('{username}', newMember.user.username)
+                    .replace('{server}',   newMember.guild.name)
+                    .replace('{count}',    String(boostCount))
+                : `<@${newMember.id}> just boosted **${newMember.guild.name}**! 💖\nWe now have **${boostCount}** boost${boostCount !== 1 ? 's' : ''}!`,
+              thumbnail: newMember.user.displayAvatarURL({ size: 256 }),
+              fields: [
+                { name: '💎 Booster',    value: `<@${newMember.id}>`, inline: true },
+                { name: '🔢 Boosts',     value: `${boostCount}`,      inline: true },
+                { name: '🏅 Tier',       value: `Tier ${boostTier}`,  inline: true },
+                ...(guild.boostRoleId ? [{ name: '🎁 Reward', value: `<@&${guild.boostRoleId}>`, inline: true }] : []),
+              ],
+            });
+
+            await channel.send({ embeds: [embed] });
+          }
+        } catch (err) {
+          logger.warn(`[GuildMemberUpdate] Boost announce error: ${err.message}`);
+        }
+      }
+    }
+
+    // Remove boost role if member stops boosting
+    if (wasBooster && !isBooster && guild.boostRoleId) {
+      try {
+        const boostRole = newMember.guild.roles.cache.get(guild.boostRoleId);
+        if (boostRole && newMember.roles.cache.has(boostRole.id)) {
+          await newMember.roles.remove(boostRole, 'No longer boosting');
+        }
+      } catch (err) {
+        logger.warn(`[GuildMemberUpdate] Boost role remove error: ${err.message}`);
+      }
     }
 
     // ── Anti-nuke — mass role strip detection ─────────────────────────────────
