@@ -84,6 +84,7 @@ app.use('/guild',       require('../routes/starboard'));
 app.use('/guild',       require('../routes/counting'));
 app.use('/guild',       require('../routes/antinuke'));
 app.use('/guild',       require('../routes/backup'));
+app.use('/guild',       require('../routes/settings'));
 app.use('/owner',       require('../routes/owner'));
 app.use('/api',         require('../routes/api'));
 
