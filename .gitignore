@@ -2,7 +2,7 @@
 node_modules/
 
 # Environment variables — NEVER commit this
-.env
+.env.example
 
 # Logs
 logs/
