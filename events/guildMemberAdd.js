@@ -25,11 +25,76 @@ module.exports = {
     }
 
     // ── Determine which invite was used ───────────────────────────────────────
-    let usedInvite = null;
+    let usedInvite = { code: null, inviterId: null, type: 'unknown' };
     try {
-      usedInvite = await inviteTrackerService.resolveInvite(member.guild, client);
+      usedInvite = await inviteTrackerService.resolveInvite(member.guild, member);
     } catch (err) {
       logger.warn(`[GuildMemberAdd] Invite tracker error: ${err.message}`);
+    }
+
+    // ── Alt / new account protection ─────────────────────────────────────────
+    if (guild.altProtection?.enabled) {
+      try {
+        const cfg         = guild.altProtection;
+        const accountAge  = Date.now() - member.user.createdTimestamp;
+        const minAgeMs    = (cfg.minAccountAgeDays || 7) * 24 * 60 * 60 * 1000;
+        const isNewAcct   = accountAge < minAgeMs;
+        const hasNoAvatar = cfg.blockDefaultAvatar && !member.user.avatar;
+
+        // Check if the inviter is exempt
+        const inviterExempt = usedInvite.inviterId && cfg.ignoreInviterId?.includes(usedInvite.inviterId);
+
+        if ((isNewAcct || hasNoAvatar) && !inviterExempt) {
+          const { buildEmbed } = require('../utils/embedBuilder');
+          const reasons = [];
+          if (isNewAcct)   reasons.push(`Account age: **${Math.floor(accountAge / (24*60*60*1000))} days** (minimum: ${cfg.minAccountAgeDays})`);
+          if (hasNoAvatar) reasons.push('No profile avatar (default avatar)');
+
+          // Always alert mods if alert channel set
+          if (cfg.alertChannelId) {
+            const alertCh = member.guild.channels.cache.get(cfg.alertChannelId);
+            if (alertCh) {
+              const alertEmbed = buildEmbed({
+                type:        'warning',
+                title:       '🛡️ Potential Alt Account Detected',
+                description: `<@${member.id}> (**${member.user.tag}**) joined and may be an alt account.`,
+                thumbnail:   member.user.displayAvatarURL({ size: 128 }),
+                fields: [
+                  { name: '⚠️ Reasons',    value: reasons.join('\n'),                                          inline: false },
+                  { name: '📅 Created',    value: `<t:${Math.floor(member.user.createdTimestamp / 1000)}:R>`, inline: true  },
+                  { name: '🔗 Invite',     value: usedInvite.code ? `\`${usedInvite.code}\`` : 'Unknown',      inline: true  },
+                  { name: '📨 Inviter',    value: usedInvite.inviterId ? `<@${usedInvite.inviterId}>` : 'Unknown', inline: true },
+                  { name: '⚙️ Action',     value: cfg.action === 'alert' ? 'Alert only (no action taken)' : cfg.action === 'kick' ? 'Kicked from server' : 'Banned from server', inline: true },
+                ],
+              });
+              await alertCh.send({ embeds: [alertEmbed] });
+            }
+          }
+
+          // Take action
+          if (cfg.action === 'kick') {
+            await member.kick(`[Alt Protection] Account too new or no avatar. Age: ${Math.floor(accountAge / (24*60*60*1000))}d`).catch(() => {});
+            logger.info(`[AltProtection] Kicked ${member.user.tag} (${member.id}) — ${reasons.join(', ')}`);
+            return; // Don't send welcome or do anything else
+          } else if (cfg.action === 'ban') {
+            await member.ban({ reason: `[Alt Protection] Account too new or no avatar. Age: ${Math.floor(accountAge / (24*60*60*1000))}d` }).catch(() => {});
+            logger.info(`[AltProtection] Banned ${member.user.tag} (${member.id}) — ${reasons.join(', ')}`);
+            return;
+          }
+          // If action is 'alert', fall through — just alerted, no kick/ban
+        }
+      } catch (err) {
+        logger.error(`[GuildMemberAdd] Alt protection error: ${err.message}`);
+      }
+    }
+
+    // ── Post to invite log channel if configured ──────────────────────────────
+    if (guild.inviteLogChannelId) {
+      try {
+        await inviteTrackerService.postInviteLog(client, member, usedInvite, guild.inviteLogChannelId);
+      } catch (err) {
+        logger.warn(`[GuildMemberAdd] Invite log error: ${err.message}`);
+      }
     }
 
     // ── Welcome message ───────────────────────────────────────────────────────
@@ -72,7 +137,9 @@ module.exports = {
           { name: 'User',        value: `<@${member.id}> (${member.user.tag})`, inline: true },
           { name: 'Account Age', value: `<t:${Math.floor(member.user.createdTimestamp / 1000)}:R>`, inline: true },
           { name: 'Member Count',value: `${member.guild.memberCount}`, inline: true },
-          ...(usedInvite ? [{ name: 'Used Invite', value: `\`${usedInvite.code}\` by <@${usedInvite.inviterId}>`, inline: true }] : []),
+          ...(usedInvite.code ? [{ name: 'Used Invite', value: `\`${usedInvite.code}\`${usedInvite.inviterId ? ` by <@${usedInvite.inviterId}>` : ''}`, inline: true }] : []),
+          ...(usedInvite.type === 'oauth' ? [{ name: '🤖 Join Type', value: 'OAuth / App Directory', inline: true }] : []),
+          ...(usedInvite.type === 'vanity' ? [{ name: '🔗 Join Type', value: `Vanity URL \`/${usedInvite.code}\``, inline: true }] : []),
           ...(newAccount ? [{ name: '⚠️ New Account', value: 'This account was created less than 7 days ago.', inline: false }] : []),
         ],
       });
