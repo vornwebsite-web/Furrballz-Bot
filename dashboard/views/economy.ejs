@@ -1,1 +1,62 @@
+<%- include('partials/head') %>
 
+<div class="tabs">
+  <button class="tab active" data-tab="shop">Shop Items</button>
+  <button class="tab" data-tab="balances">Balances</button>
+</div>
+
+<div class="tab-panel active" id="tab-shop">
+  <div class="card">
+    <div class="card-header">
+      Shop Items
+      <button class="btn btn-sm btn-primary" onclick="showAddItem()">+ Add Item</button>
+    </div>
+    <div class="card-body p-0">
+      <table class="table">
+        <thead><tr><th>Name</th><th>Price</th><th>Type</th><th>Stock</th><th>Sold</th><th>Actions</th></tr></thead>
+        <tbody>
+          <% items.forEach(function(item) { %>
+          <tr>
+            <td><%= item.name %></td>
+            <td><%= item.price.toLocaleString() %></td>
+            <td><span class="badge"><%= item.type %></span></td>
+            <td><%= item.stock === -1 ? '∞' : item.stock %></td>
+            <td><%= item.sold %></td>
+            <td><button class="btn btn-sm btn-danger" onclick="deleteItem('<%= guild.id %>','<%= item._id %>',this)">Remove</button></td>
+          </tr>
+          <% }); %>
+          <% if (!items.length) { %><tr><td colspan="6" class="empty-row">No items in shop.</td></tr><% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="tab-panel" id="tab-balances">
+  <div class="card">
+    <div class="card-header">Top Balances</div>
+    <div class="card-body p-0">
+      <table class="table">
+        <thead><tr><th>#</th><th>User ID</th><th>Balance</th><th>Set Balance</th></tr></thead>
+        <tbody>
+          <% topUsers.forEach(function(u, i) { %>
+          <tr>
+            <td><%= i+1 %></td>
+            <td><code><%= u.userId %></code></td>
+            <td><%= u.balance.toLocaleString() %></td>
+            <td>
+              <div style="display:flex;gap:6px;align-items:center">
+                <input type="number" id="bal-<%= u.userId %>" value="<%= u.balance %>" style="width:100px">
+                <button class="btn btn-sm" onclick="setBalance('<%= guild.id %>','<%= u.userId %>')">Set</button>
+              </div>
+            </td>
+          </tr>
+          <% }); %>
+          <% if (!topUsers.length) { %><tr><td colspan="4" class="empty-row">No economy data.</td></tr><% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/foot') %>
