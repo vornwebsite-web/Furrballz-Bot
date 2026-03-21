@@ -129,6 +129,8 @@ const GuildSchema = new Schema({
   partnerChannelId:    { type: String,  default: null  },
   boostChannelId:      { type: String,  default: null  },
   boostMessage:        { type: String,  default: null  },
+  boostRoleId:         { type: String,  default: null  }, // role assigned when member boosts
+  inviteLogChannelId:  { type: String,  default: null  }, // channel for invite join messages
   tempVoiceCategoryId: { type: String,  default: null  },
   tempVoiceTriggerChannelId: { type: String, default: null },
 
