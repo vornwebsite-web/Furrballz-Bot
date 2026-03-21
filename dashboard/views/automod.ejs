@@ -2,17 +2,17 @@
 
 <form id="automod-form">
 <div class="card">
-  <div class="card-header">Automod Settings</div>
+  <div class="card-header"><span class="card-header-icon">🛡️</span> Automod Settings</div>
   <div class="card-body form-grid">
     <div class="form-group">
       <label>Status</label>
       <select name="enabled">
-        <option value="true"  <%= guildDoc.automod.enabled?'selected':'' %>>Enabled</option>
-        <option value="false" <%= !guildDoc.automod.enabled?'selected':'' %>>Disabled</option>
+        <option value="true"  <%= guildDoc.automod.enabled?'selected':'' %>>🟢 Enabled</option>
+        <option value="false" <%= !guildDoc.automod.enabled?'selected':'' %>>🔴 Disabled</option>
       </select>
     </div>
     <div class="form-group">
-      <label>Action</label>
+      <label>Action on Trigger</label>
       <select name="action">
         <% ['delete','warn','mute','kick'].forEach(function(a) { %>
         <option value="<%= a %>" <%= guildDoc.automod.action===a?'selected':'' %>><%= a.charAt(0).toUpperCase()+a.slice(1) %></option>
@@ -28,22 +28,6 @@
         <% }); %>
       </select>
     </div>
-    <div class="form-group toggle-group">
-      <label>Filter Invites</label>
-      <input type="checkbox" name="filterInvites" value="true" class="toggle" <%= guildDoc.automod.filterInvites?'checked':'' %>>
-    </div>
-    <div class="form-group toggle-group">
-      <label>Filter Links</label>
-      <input type="checkbox" name="filterLinks" value="true" class="toggle" <%= guildDoc.automod.filterLinks?'checked':'' %>>
-    </div>
-    <div class="form-group toggle-group">
-      <label>Filter Caps</label>
-      <input type="checkbox" name="filterCaps" value="true" class="toggle" <%= guildDoc.automod.filterCaps?'checked':'' %>>
-    </div>
-    <div class="form-group toggle-group">
-      <label>Filter Mass Mentions</label>
-      <input type="checkbox" name="filterMentions" value="true" class="toggle" <%= guildDoc.automod.filterMentions?'checked':'' %>>
-    </div>
     <div class="form-group">
       <label>Caps Threshold (%)</label>
       <input type="number" name="capsThreshold" value="<%= guildDoc.automod.capsThreshold||70 %>" min="10" max="100">
@@ -52,9 +36,27 @@
       <label>Mention Limit</label>
       <input type="number" name="mentionLimit" value="<%= guildDoc.automod.mentionLimit||5 %>" min="1" max="50">
     </div>
+    <div style="grid-column:span 2; display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:10px">
+      <div class="toggle-group">
+        <label>Filter Invites</label>
+        <input type="checkbox" name="filterInvites" value="true" class="toggle" <%= guildDoc.automod.filterInvites?'checked':'' %>>
+      </div>
+      <div class="toggle-group">
+        <label>Filter Links</label>
+        <input type="checkbox" name="filterLinks" value="true" class="toggle" <%= guildDoc.automod.filterLinks?'checked':'' %>>
+      </div>
+      <div class="toggle-group">
+        <label>Filter Caps</label>
+        <input type="checkbox" name="filterCaps" value="true" class="toggle" <%= guildDoc.automod.filterCaps?'checked':'' %>>
+      </div>
+      <div class="toggle-group">
+        <label>Filter Mentions</label>
+        <input type="checkbox" name="filterMentions" value="true" class="toggle" <%= guildDoc.automod.filterMentions?'checked':'' %>>
+      </div>
+    </div>
     <div class="form-group span-2">
-      <label>Banned Words (one per line)</label>
-      <textarea name="bannedWords" rows="5"><%= (guildDoc.automod.bannedWords||[]).join('\n') %></textarea>
+      <label>Banned Words <small>One per line</small></label>
+      <textarea name="bannedWords" rows="6" placeholder="Enter banned words, one per line..."><%= (guildDoc.automod.bannedWords||[]).join('\n') %></textarea>
     </div>
   </div>
   <div class="card-footer">
