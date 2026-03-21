@@ -1,1 +1,34 @@
+<%- include('partials/head') %>
 
+<div class="guilds-grid">
+  <% guilds.forEach(function(g) { %>
+  <div class="guild-card <%= g.botPresent ? '' : 'guild-card--no-bot' %>">
+    <div class="guild-card-icon">
+      <% if (g.icon) { %>
+        <img src="<%= g.icon %>" alt="">
+      <% } else { %>
+        <div class="guild-icon-placeholder guild-icon-placeholder--lg"><%= g.name[0] %></div>
+      <% } %>
+    </div>
+    <div class="guild-card-info">
+      <span class="guild-card-name"><%= g.name %></span>
+      <span class="guild-card-id"><%= g.id %></span>
+    </div>
+    <div class="guild-card-action">
+      <% if (g.botPresent) { %>
+        <a href="/guild/<%= g.id %>" class="btn btn-sm btn-primary">Manage</a>
+      <% } else { %>
+        <a href="https://discord.com/oauth2/authorize?client_id=<%= clientId %>&permissions=8&scope=bot%20applications.commands&guild_id=<%= g.id %>" target="_blank" class="btn btn-sm btn-outline">Add Bot</a>
+      <% } %>
+    </div>
+  </div>
+  <% }); %>
+  <% if (!guilds.length) { %>
+  <div class="empty-state">
+    <div class="empty-icon">🏰</div>
+    <p>No servers found where you have Manage Server permission.</p>
+  </div>
+  <% } %>
+</div>
+
+<%- include('partials/foot') %>
