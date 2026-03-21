@@ -15,10 +15,32 @@ module.exports = {
     const guild = await Guild.getOrCreate(newMember.guild.id);
 
     // ── Boost detection ───────────────────────────────────────────────────────
-    const wasBooster = oldMember.premiumSince;
-    const isBooster  = newMember.premiumSince;
+    // SECURITY: Only fire when premiumSince transitions from null → a real date.
+    // Guards against:
+    //   • Nickname / avatar / username / role changes   → premiumSince unchanged
+    //   • Discord double-fire on same boost event       → in-memory cooldown per user
+    //   • Member re-boosting within same session        → timestamp must differ
+    const wasBoostTimestamp = oldMember.premiumSinceTimestamp; // null if not boosting
+    const isBoostTimestamp  = newMember.premiumSinceTimestamp; // null if not boosting
 
-    if (!wasBooster && isBooster) {
+    const justStartedBoosting = !wasBoostTimestamp && !!isBoostTimestamp;
+    const justStoppedBoosting = !!wasBoostTimestamp && !isBoostTimestamp;
+
+    // In-memory dedup: prevent double announce within 5 seconds per user
+    if (!client._boostCooldown) client._boostCooldown = new Map();
+    const boostKey   = `${newMember.guild.id}_${newMember.id}`;
+    const lastBoost  = client._boostCooldown.get(boostKey) || 0;
+    const boostDedup = justStartedBoosting && (Date.now() - lastBoost) > 5000;
+
+    if (justStartedBoosting && boostDedup) {
+      client._boostCooldown.set(boostKey, Date.now());
+      // Clean up old entries every 100 boosts to avoid memory leak
+      if (client._boostCooldown.size > 100) {
+        const cutoff = Date.now() - 60000;
+        for (const [k, v] of client._boostCooldown) {
+          if (v < cutoff) client._boostCooldown.delete(k);
+        }
+      }
       // Assign boost role if configured
       if (guild.boostRoleId) {
         try {
@@ -65,10 +87,8 @@ module.exports = {
           logger.warn(`[GuildMemberUpdate] Boost announce error: ${err.message}`);
         }
       }
-    }
-
-    // Remove boost role if member stops boosting
-    if (wasBooster && !isBooster && guild.boostRoleId) {
+    } // end justStartedBoosting && boostDedup
+    if (justStoppedBoosting && guild.boostRoleId) {
       try {
         const boostRole = newMember.guild.roles.cache.get(guild.boostRoleId);
         if (boostRole && newMember.roles.cache.has(boostRole.id)) {
