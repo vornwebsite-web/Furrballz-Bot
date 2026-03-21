@@ -1,1 +1,23 @@
+<%- include('partials/head') %>
 
+<form id="roles-form">
+<div class="card">
+  <div class="card-header">Auto Roles</div>
+  <div class="card-body">
+    <p class="form-hint">Roles automatically assigned to new members when they join.</p>
+    <div class="roles-checkboxes">
+      <% roles.forEach(function(r) { %>
+      <label class="role-checkbox">
+        <input type="checkbox" name="autoRoles" value="<%= r.id %>" <%= (guildDoc.autoRoles||[]).includes(r.id)?'checked':'' %>>
+        <span class="role-pill" style="border-color:<%= r.color %>"><%= r.name %></span>
+      </label>
+      <% }); %>
+    </div>
+  </div>
+  <div class="card-footer">
+    <button type="button" class="btn btn-primary" onclick="saveForm('roles-form','/guild/<%= guild.id %>/roles')">Save Auto Roles</button>
+  </div>
+</div>
+</form>
+
+<%- include('partials/foot') %>
