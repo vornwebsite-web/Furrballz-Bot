@@ -1,1 +1,56 @@
+<%- include('partials/head') %>
 
+<div class="stats-grid">
+  <div class="stat-card"><div class="stat-value"><%= stats.members.toLocaleString() %></div><div class="stat-label">Members</div></div>
+  <div class="stat-card"><div class="stat-value"><%= stats.openTickets %></div><div class="stat-label">Open Tickets</div></div>
+  <div class="stat-card"><div class="stat-value"><%= stats.channels %></div><div class="stat-label">Channels</div></div>
+  <div class="stat-card"><div class="stat-value"><%= stats.roles %></div><div class="stat-label">Roles</div></div>
+  <div class="stat-card"><div class="stat-value"><%= stats.uptime %>m</div><div class="stat-label">Bot Uptime</div></div>
+  <div class="stat-card"><div class="stat-value"><%= stats.commands %></div><div class="stat-label">Commands</div></div>
+</div>
+
+<div class="row">
+  <div class="col">
+    <div class="card">
+      <div class="card-header">Recent Warnings</div>
+      <div class="card-body">
+        <% if (recentWarns.length) { %>
+        <table class="table">
+          <thead><tr><th>Case</th><th>User</th><th>Reason</th><th>Date</th></tr></thead>
+          <tbody>
+            <% recentWarns.forEach(function(w) { %>
+            <tr>
+              <td><code><%= w.caseId %></code></td>
+              <td><code><%= w.userId %></code></td>
+              <td><%= w.reason.slice(0,40) %></td>
+              <td><%= new Date(w.createdAt).toLocaleDateString() %></td>
+            </tr>
+            <% }); %>
+          </tbody>
+        </table>
+        <% } else { %>
+        <div class="empty-state-sm">No recent warnings.</div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+  <div class="col">
+    <div class="card">
+      <div class="card-header">Quick Links</div>
+      <div class="card-body">
+        <div class="quick-links">
+          <a href="/guild/<%= guild.id %>/moderation" class="quick-link">🔨 Moderation</a>
+          <a href="/guild/<%= guild.id %>/tickets"    class="quick-link">🎫 Tickets</a>
+          <a href="/guild/<%= guild.id %>/logging"    class="quick-link">📋 Logging</a>
+          <a href="/guild/<%= guild.id %>/automod"    class="quick-link">🛡️ Automod</a>
+          <a href="/guild/<%= guild.id %>/giveaways"  class="quick-link">🎉 Giveaways</a>
+          <a href="/guild/<%= guild.id %>/social"     class="quick-link">📡 Social</a>
+          <a href="/guild/<%= guild.id %>/antinuke"   class="quick-link">☢️ Anti-Nuke</a>
+          <a href="/guild/<%= guild.id %>/backup"     class="quick-link">💾 Backup</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/foot') %>
