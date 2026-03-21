@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= title %> — <%= botName %></title>
+  <!-- Apply theme BEFORE CSS loads to prevent flash of wrong theme -->
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('furrballz-theme') || 'dark');</script>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
