@@ -1,1 +1,44 @@
+<%- include('partials/head') %>
 
+<form id="logging-form">
+<div class="card">
+  <div class="card-header">Log Channel Configuration</div>
+  <div class="card-body form-grid">
+    <% var events = [
+      { key: 'messageDelete',  label: 'Message Delete'  },
+      { key: 'messageUpdate',  label: 'Message Edit'    },
+      { key: 'memberJoin',     label: 'Member Join'     },
+      { key: 'memberLeave',    label: 'Member Leave'    },
+      { key: 'memberUpdate',   label: 'Member Update'   },
+      { key: 'banAdd',         label: 'Ban'             },
+      { key: 'banRemove',      label: 'Unban'           },
+      { key: 'channelCreate',  label: 'Channel Create'  },
+      { key: 'channelDelete',  label: 'Channel Delete'  },
+      { key: 'channelUpdate',  label: 'Channel Update'  },
+      { key: 'roleCreate',     label: 'Role Create'     },
+      { key: 'roleDelete',     label: 'Role Delete'     },
+      { key: 'roleUpdate',     label: 'Role Update'     },
+      { key: 'voiceUpdate',    label: 'Voice State'     },
+      { key: 'modAction',      label: 'Mod Actions'     },
+      { key: 'guildUpdate',    label: 'Server Update'   },
+      { key: 'inviteCreate',   label: 'Invite Create'   },
+    ]; %>
+    <% events.forEach(function(e) { %>
+    <div class="form-group">
+      <label><%= e.label %></label>
+      <select name="<%= e.key %>">
+        <option value="">Disabled</option>
+        <% channels.forEach(function(c) { %>
+        <option value="<%= c.id %>" <%= (guildDoc.logChannels && guildDoc.logChannels[e.key])===c.id?'selected':'' %>>#<%= c.name %></option>
+        <% }); %>
+      </select>
+    </div>
+    <% }); %>
+  </div>
+  <div class="card-footer">
+    <button type="button" class="btn btn-primary" onclick="saveForm('logging-form','/guild/<%= guild.id %>/logging')">Save Changes</button>
+  </div>
+</div>
+</form>
+
+<%- include('partials/foot') %>
