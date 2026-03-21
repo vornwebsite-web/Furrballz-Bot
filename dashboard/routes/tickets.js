@@ -20,12 +20,18 @@ router.get('/:guildId/tickets', requireAuth, requireGuildAccess, async (req, res
       TicketConfig.getOrCreate(guild.id),
     ]);
 
+    const channels = guild.channels.cache
+      .filter(c => c.isTextBased())
+      .map(c => ({ id: c.id, name: c.name }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+
     res.render('tickets', {
       title:      `Tickets — ${guild.name}`,
       guild,
       tickets,
       total,
       cfg,
+      channels,
       status,
       page,
       totalPages: Math.ceil(total / limit),
