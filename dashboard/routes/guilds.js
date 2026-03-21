@@ -26,7 +26,7 @@ router.get('/', requireAuth, (req, res) => {
         : null,
     }));
 
-  res.render('guilds', { title: 'Select a Server', guilds: mutual });
+  res.render('guilds', { title: 'Select a Server', guilds: mutual, clientId: req.app.locals.client.user.id });
 });
 
 module.exports = router;
