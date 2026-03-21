@@ -1,32 +1,30 @@
 <%- include('partials/head') %>
 
-<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
-  <input type="text" id="backup-label" placeholder="Optional label..." style="width:240px">
+<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+  <input type="text" id="backup-label" placeholder="Optional label..." style="width:220px">
   <button class="btn btn-primary" onclick="createBackup('<%= guild.id %>')">📸 Create Backup</button>
-  <span class="badge"><%= backups.length %> / 10 backups</span>
+  <span class="badge badge-accent"><%= backups.length %> / 10</span>
 </div>
 
 <div class="card">
-  <div class="card-header">Saved Backups</div>
+  <div class="card-header"><span class="card-header-icon">💾</span> Saved Backups</div>
   <div class="card-body p-0">
     <table class="table" id="backup-table">
-      <thead>
-        <tr><th>ID</th><th>Label</th><th>Roles</th><th>Channels</th><th>Created by</th><th>Date</th><th>Actions</th></tr>
-      </thead>
+      <thead><tr><th>ID</th><th>Label</th><th>Roles</th><th>Channels</th><th>Created by</th><th>Date</th><th></th></tr></thead>
       <tbody>
         <% backups.forEach(function(b) { %>
         <tr id="backup-row-<%= b.backupId %>">
           <td><code><%= b.backupId %></code></td>
-          <td><%= b.label || '—' %></td>
-          <td><%= b.roles ? b.roles.length : 0 %></td>
-          <td><%= b.channels ? b.channels.length : 0 %></td>
-          <td><code><%= b.createdBy %></code></td>
-          <td><%= new Date(b.createdAt).toLocaleString() %></td>
+          <td><%= b.label||'<span style="color:var(--text-muted)">—</span>' %></td>
+          <td><span class="badge"><%= b.roles?b.roles.length:0 %></span></td>
+          <td><span class="badge"><%= b.channels?b.channels.length:0 %></span></td>
+          <td><code style="font-size:11px"><%= b.createdBy %></code></td>
+          <td><%= new Date(b.createdAt).toLocaleDateString() %></td>
           <td>
             <div style="display:flex;gap:6px">
-              <button class="btn btn-sm" onclick="previewBackup('<%= guild.id %>','<%= b.backupId %>')">Preview</button>
-              <button class="btn btn-sm btn-danger" onclick="loadBackup('<%= guild.id %>','<%= b.backupId %>')">Restore</button>
-              <button class="btn btn-sm btn-danger" onclick="deleteBackup('<%= guild.id %>','<%= b.backupId %>',this)">Delete</button>
+              <button class="btn btn-xs" onclick="previewBackup('<%= guild.id %>','<%= b.backupId %>')">Preview</button>
+              <button class="btn btn-xs btn-danger" onclick="loadBackup('<%= guild.id %>','<%= b.backupId %>')">Restore</button>
+              <button class="btn btn-xs btn-danger" onclick="deleteBackup('<%= guild.id %>','<%= b.backupId %>',this)">Delete</button>
             </div>
           </td>
         </tr>
@@ -39,63 +37,51 @@
   </div>
 </div>
 
-<div class="card" style="margin-top:1.5rem;display:none" id="preview-card">
-  <div class="card-header">Backup Preview <span id="preview-id" class="badge"></span></div>
-  <div class="card-body" id="preview-body"></div>
+<div class="card" style="display:none" id="preview-card">
+  <div class="card-header"><span class="card-header-icon">🔍</span> Backup Preview <span id="preview-id" class="badge badge-accent"></span></div>
+  <div class="card-body form-grid" id="preview-body"></div>
 </div>
 
 <script>
 async function createBackup(guildId) {
-  const label = document.getElementById('backup-label').value.trim();
-  const btn = event.target; btn.disabled = true; btn.textContent = '⏳ Creating...';
-  try {
-    const res  = await fetch('/guild/' + guildId + '/backup/create', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ label }) });
-    const json = await res.json();
-    if (json.success) { toast('Backup created: ' + json.backupId,'success'); setTimeout(() => location.reload(), 1200); }
-    else { toast(json.error||'Failed.','error'); btn.disabled=false; btn.textContent='📸 Create Backup'; }
-  } catch { toast('Network error.','error'); btn.disabled=false; btn.textContent='📸 Create Backup'; }
+  const label=document.getElementById('backup-label').value.trim();
+  const btn=event.target; btn.disabled=true; btn.textContent='⏳ Creating...';
+  const res=await fetch('/guild/'+guildId+'/backup/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({label})});
+  const json=await res.json();
+  if(json.success){toast('Backup created: '+json.backupId,'success');setTimeout(()=>location.reload(),1200);}
+  else{toast(json.error||'Failed.','error');btn.disabled=false;btn.textContent='📸 Create Backup';}
 }
-async function deleteBackup(guildId, backupId, btn) {
-  if (!confirm('Delete backup ' + backupId + '?')) return;
-  btn.disabled = true;
-  try {
-    const res  = await fetch('/guild/' + guildId + '/backup/' + backupId, { method:'DELETE' });
-    const json = await res.json();
-    if (json.success) { toast('Deleted.','success'); const r=document.getElementById('backup-row-'+backupId); if(r)r.remove(); }
-    else { toast(json.error||'Failed.','error'); btn.disabled=false; }
-  } catch { toast('Network error.','error'); btn.disabled=false; }
+async function deleteBackup(guildId,backupId,btn){
+  if(!confirm('Delete backup '+backupId+'?'))return;
+  btn.disabled=true;
+  const res=await fetch('/guild/'+guildId+'/backup/'+backupId,{method:'DELETE'});
+  const json=await res.json();
+  if(json.success){toast('Deleted.','success');const r=document.getElementById('backup-row-'+backupId);if(r)r.remove();}
+  else{toast(json.error||'Failed.','error');btn.disabled=false;}
 }
-async function loadBackup(guildId, backupId) {
-  if (!confirm('Restore backup ' + backupId + '?\n\nThis will overwrite current server settings.')) return;
-  const deleteExisting = confirm('Also DELETE all current channels and roles before restoring?\n(Destructive — cannot be undone.)');
-  toast('Restoring... this may take a minute.','success');
-  try {
-    const res  = await fetch('/guild/' + guildId + '/backup/' + backupId + '/load', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ deleteExisting: String(deleteExisting) }) });
-    const json = await res.json();
-    toast(json.success ? 'Backup restored!' + (json.errors && json.errors.length ? ' (' + json.errors.length + ' errors)' : '') : (json.error||'Failed.'), json.success ? 'success' : 'error');
-  } catch { toast('Network error.','error'); }
+async function loadBackup(guildId,backupId){
+  if(!confirm('Restore backup '+backupId+'?\n\nThis will overwrite current server settings.'))return;
+  const del=confirm('Also DELETE all current channels and roles first?\n(Destructive — cannot be undone.)');
+  toast('Restoring...','success');
+  const res=await fetch('/guild/'+guildId+'/backup/'+backupId+'/load',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({deleteExisting:String(del)})});
+  const json=await res.json();
+  toast(json.success?'Restored!'+(json.errors&&json.errors.length?' ('+json.errors.length+' errors)':''):json.error||'Failed.',json.success?'success':'error');
 }
-async function previewBackup(guildId, backupId) {
-  try {
-    const res  = await fetch('/guild/' + guildId + '/backup/' + backupId + '/preview');
-    const json = await res.json();
-    if (!json.success) return toast(json.error||'Preview failed.','error');
-    const d = json.diff;
-    const card = document.getElementById('preview-card');
-    const body = document.getElementById('preview-body');
-    document.getElementById('preview-id').textContent = backupId;
-    body.innerHTML =
-      '<div class="form-grid">' +
-      '<div class="form-group"><label>Backup date</label><span>' + new Date(d.backupDate).toLocaleString() + '</span></div>' +
-      '<div class="form-group"><label>Label</label><span>' + (d.label||'—') + '</span></div>' +
-      '<div class="form-group"><label>Roles to add (' + d.rolesToAdd.length + ')</label><p style="color:var(--success)">' + (d.rolesToAdd.join(', ')||'None') + '</p></div>' +
-      '<div class="form-group"><label>Roles to remove (' + d.rolesToRemove.length + ')</label><p style="color:var(--error)">' + (d.rolesToRemove.join(', ')||'None') + '</p></div>' +
-      '<div class="form-group"><label>Channels to add (' + d.channelsToAdd.length + ')</label><p style="color:var(--success)">' + (d.channelsToAdd.join(', ')||'None') + '</p></div>' +
-      '<div class="form-group"><label>Channels to remove (' + d.channelsToRemove.length + ')</label><p style="color:var(--error)">' + (d.channelsToRemove.join(', ')||'None') + '</p></div>' +
-      '</div>';
-    card.style.display = '';
-    card.scrollIntoView({ behavior:'smooth' });
-  } catch { toast('Network error.','error'); }
+async function previewBackup(guildId,backupId){
+  const res=await fetch('/guild/'+guildId+'/backup/'+backupId+'/preview');
+  const json=await res.json();
+  if(!json.success)return toast(json.error||'Failed.','error');
+  const d=json.diff;
+  document.getElementById('preview-id').textContent=backupId;
+  document.getElementById('preview-body').innerHTML=
+    '<div class="form-group"><label>Backup Date</label><span>'+new Date(d.backupDate).toLocaleString()+'</span></div>'+
+    '<div class="form-group"><label>Label</label><span>'+(d.label||'—')+'</span></div>'+
+    '<div class="form-group"><label>Roles to Add ('+d.rolesToAdd.length+')</label><p style="color:var(--success);font-size:13px">'+(d.rolesToAdd.join(', ')||'None')+'</p></div>'+
+    '<div class="form-group"><label>Roles to Remove ('+d.rolesToRemove.length+')</label><p style="color:var(--error);font-size:13px">'+(d.rolesToRemove.join(', ')||'None')+'</p></div>'+
+    '<div class="form-group"><label>Channels to Add ('+d.channelsToAdd.length+')</label><p style="color:var(--success);font-size:13px">'+(d.channelsToAdd.join(', ')||'None')+'</p></div>'+
+    '<div class="form-group"><label>Channels to Remove ('+d.channelsToRemove.length+')</label><p style="color:var(--error);font-size:13px">'+(d.channelsToRemove.join(', ')||'None')+'</p></div>';
+  document.getElementById('preview-card').style.display='';
+  document.getElementById('preview-card').scrollIntoView({behavior:'smooth'});
 }
 </script>
 
