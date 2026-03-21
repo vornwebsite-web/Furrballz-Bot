@@ -1,34 +1,103 @@
-<%- include('partials/head') %>
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Select Server — <%= botName %></title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    body { background: var(--bg-base); min-height: 100vh; }
+    .guilds-page { max-width: 900px; margin: 0 auto; padding: 48px 24px; }
+    .guilds-topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 36px; }
+    .guilds-brand { display: flex; align-items: center; gap: 12px; }
+    .guilds-brand-logo { width: 40px; height: 40px; background: var(--accent-dim); border: 1px solid var(--border-strong); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .guilds-brand-name { font-size: 18px; font-weight: 700; }
+    .guilds-user { display: flex; align-items: center; gap: 10px; }
+    .guilds-user img { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--border-strong); }
+    .guilds-user-name { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+    .guilds-heading { font-size: 26px; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.5px; }
+    .guilds-subheading { font-size: 14px; color: var(--text-muted); margin-bottom: 28px; }
+    .guilds-section-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 12px; margin-top: 8px; }
+  </style>
+</head>
+<body>
+<div class="guilds-page">
 
-<div class="guilds-grid">
-  <% guilds.forEach(function(g) { %>
-  <div class="guild-card <%= g.botPresent ? '' : 'guild-card--no-bot' %>">
-    <div class="guild-card-icon">
-      <% if (g.icon) { %>
-        <img src="<%= g.icon %>" alt="">
-      <% } else { %>
-        <div class="guild-icon-placeholder guild-icon-placeholder--lg"><%= g.name[0] %></div>
-      <% } %>
+  <div class="guilds-topbar">
+    <div class="guilds-brand">
+      <div class="guilds-brand-logo">🐾</div>
+      <span class="guilds-brand-name"><%= botName %></span>
     </div>
-    <div class="guild-card-info">
-      <span class="guild-card-name"><%= g.name %></span>
-      <span class="guild-card-id"><%= g.id %></span>
+    <% if (typeof user !== 'undefined' && user) { %>
+    <div class="guilds-user">
+      <img src="https://cdn.discordapp.com/avatars/<%= user.id %>/<%= user.avatar %>.png?size=32" alt="" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
+      <span class="guilds-user-name"><%= user.username %></span>
+      <a href="/auth/logout" class="btn btn-sm btn-outline">Sign out</a>
     </div>
-    <div class="guild-card-action">
-      <% if (g.botPresent) { %>
-        <a href="/guild/<%= g.id %>" class="btn btn-sm btn-primary">Manage</a>
-      <% } else { %>
-        <a href="https://discord.com/oauth2/authorize?client_id=<%= clientId %>&permissions=8&scope=bot%20applications.commands&guild_id=<%= g.id %>" target="_blank" class="btn btn-sm btn-outline">Add Bot</a>
-      <% } %>
-    </div>
+    <% } %>
   </div>
-  <% }); %>
+
+  <h1 class="guilds-heading">Select a Server</h1>
+  <p class="guilds-subheading">Choose a server to manage. You need Manage Server permission.</p>
+
+  <%
+    var withBot    = guilds.filter(function(g){ return g.botPresent; });
+    var withoutBot = guilds.filter(function(g){ return !g.botPresent; });
+  %>
+
+  <% if (withBot.length) { %>
+  <div class="guilds-section-label">🟢 Bot is in these servers (<%= withBot.length %>)</div>
+  <div class="guilds-grid" style="margin-bottom:28px">
+    <% withBot.forEach(function(g) { %>
+    <div class="guild-card">
+      <div class="guild-card-icon">
+        <% if (g.icon) { %>
+          <img src="<%= g.icon %>" alt="" style="width:48px;height:48px;border-radius:14px;border:1px solid var(--border)">
+        <% } else { %>
+          <div class="guild-icon-placeholder guild-icon-placeholder--lg"><%= g.name[0] %></div>
+        <% } %>
+      </div>
+      <div class="guild-card-info">
+        <span class="guild-card-name"><%= g.name %></span>
+        <span class="guild-card-id"><%= g.id %></span>
+      </div>
+      <a href="/guild/<%= g.id %>" class="btn btn-sm btn-primary">Manage</a>
+    </div>
+    <% }); %>
+  </div>
+  <% } %>
+
+  <% if (withoutBot.length) { %>
+  <div class="guilds-section-label">⚫ Add bot to these servers (<%= withoutBot.length %>)</div>
+  <div class="guilds-grid">
+    <% withoutBot.forEach(function(g) { %>
+    <div class="guild-card guild-card--no-bot">
+      <div class="guild-card-icon">
+        <% if (g.icon) { %>
+          <img src="<%= g.icon %>" alt="" style="width:48px;height:48px;border-radius:14px;border:1px solid var(--border)">
+        <% } else { %>
+          <div class="guild-icon-placeholder guild-icon-placeholder--lg"><%= g.name[0] %></div>
+        <% } %>
+      </div>
+      <div class="guild-card-info">
+        <span class="guild-card-name"><%= g.name %></span>
+        <span class="guild-card-id"><%= g.id %></span>
+      </div>
+      <a href="https://discord.com/oauth2/authorize?client_id=<%= clientId %>&permissions=8&scope=bot%20applications.commands&guild_id=<%= g.id %>" target="_blank" class="btn btn-sm btn-outline">Add Bot</a>
+    </div>
+    <% }); %>
+  </div>
+  <% } %>
+
   <% if (!guilds.length) { %>
   <div class="empty-state">
     <div class="empty-icon">🏰</div>
     <p>No servers found where you have Manage Server permission.</p>
   </div>
   <% } %>
-</div>
 
-<%- include('partials/foot') %>
+</div>
+<script src="/theme.js"></script>
+<script src="/dashboard.js"></script>
+</body>
+</html>
