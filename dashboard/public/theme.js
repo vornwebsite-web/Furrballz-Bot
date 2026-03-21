@@ -1,14 +1,11 @@
-// ── Copyright 2026 Furrballz Bot™ — TheFurrballz Hotel ───────────────────────
+// ── Copyright 2026 Furrballz Bot™ ────────────────────────────────────────────
+// Theme is applied inline in <head> before paint to prevent flicker.
+// This file only handles the toggle function.
 
 (function () {
   'use strict';
 
   const STORAGE_KEY = 'furrballz-theme';
-  const DEFAULT     = 'dark';
-
-  function getTheme() {
-    return localStorage.getItem(STORAGE_KEY) || DEFAULT;
-  }
 
   function setTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
@@ -16,13 +13,9 @@
   }
 
   function toggleTheme() {
-    const current = getTheme();
+    const current = localStorage.getItem(STORAGE_KEY) || 'dark';
     setTheme(current === 'dark' ? 'light' : 'dark');
   }
 
-  // Apply saved theme immediately on page load (before paint)
-  setTheme(getTheme());
-
-  // Expose globally for the toggle button
   window.toggleTheme = toggleTheme;
 })();
