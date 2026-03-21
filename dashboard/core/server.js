@@ -32,8 +32,18 @@ const app = express();
 // Trust Railway's reverse proxy so secure cookies work over HTTPS
 app.set('trust proxy', 1);
 
+const ejs  = require('ejs');
+const VIEWS_DIR = path.join(__dirname, '..', 'views');
+
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, '..', 'views'));
+app.set('views', VIEWS_DIR);
+
+// Register EJS engine explicitly with root so <%- include('partials/head') %> resolves
+app.engine('ejs', (filePath, options, callback) => {
+  ejs.renderFile(filePath, options, { root: VIEWS_DIR, views: [VIEWS_DIR] }, callback);
+});
+
+app.locals.basedir = VIEWS_DIR;
 
 // ── Middleware ────────────────────────────────────────────────────────────────
 app.use(express.json());
