@@ -104,7 +104,7 @@ async function connectDatabase() {
 // ── Start dashboard ───────────────────────────────────────────────────────────
 function startDashboard() {
   try {
-    const dashboard = require('./dashboard/server');
+    const dashboard = require('./dashboard/core/server');
     dashboard.start(client);
     logger.info(`[Dashboard] Running on port ${config.port}`);
   } catch (err) {
