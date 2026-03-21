@@ -1,5 +1,6 @@
 <%- include('partials/head') %>
 
+<% if (feeds.length) { %>
 <div class="feeds-grid">
   <% feeds.forEach(function(f) { %>
   <%
@@ -11,22 +12,22 @@
   <div class="feed-card">
     <div class="feed-card-top">
       <span class="feed-platform feed-platform--<%= f.platform %>"><%= f.platform %></span>
-      <span class="feed-handle">@<%= f.handle %></span>
-      <% if (f.paused) { %><span class="badge badge-warning">Paused</span><% } %>
+      <strong class="feed-handle">@<%= f.handle %></strong>
+      <% if (f.paused) { %><span class="badge badge-warning" style="margin-left:auto">Paused</span><% } %>
     </div>
-    <div class="feed-card-channel"># <%= ch ? ch.name : 'unknown' %></div>
+    <div class="feed-card-channel">📢 #<%= ch ? ch.name : 'unknown channel' %></div>
     <div class="feed-card-actions">
-      <button class="btn btn-sm" onclick="toggleFeedPause('<%= guild.id %>','<%= f._id %>',this)"><%= f.paused?'Resume':'Pause' %></button>
+      <button class="btn btn-sm" onclick="toggleFeedPause('<%= guild.id %>','<%= f._id %>',this)"><%= f.paused?'▶️ Resume':'⏸ Pause' %></button>
       <button class="btn btn-sm btn-danger" onclick="deleteFeed('<%= guild.id %>','<%= f._id %>',this)">Remove</button>
     </div>
   </div>
   <% }); %>
-  <% if (!feeds.length) { %>
-  <div class="empty-state">
-    <div class="empty-icon">📡</div>
-    <p>No social feeds configured yet.<br>Use <code>/social add</code> or <code>/twitch add</code> in your server.</p>
-  </div>
-  <% } %>
 </div>
+<% } else { %>
+<div class="empty-state">
+  <div class="empty-icon">📡</div>
+  <p>No social feeds configured yet.<br>Use <code>/social add</code> or <code>/twitch add</code> in Discord.</p>
+</div>
+<% } %>
 
 <%- include('partials/foot') %>
