@@ -1,0 +1,38 @@
+<%- include('partials/head') %>
+
+<form id="starboard-form">
+<div class="card">
+  <div class="card-header">Starboard Configuration</div>
+  <div class="card-body form-grid">
+    <div class="form-group">
+      <label>Status</label>
+      <select name="enabled">
+        <option value="true"  <%= guildDoc.starboard.enabled?'selected':'' %>>Enabled</option>
+        <option value="false" <%= !guildDoc.starboard.enabled?'selected':'' %>>Disabled</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Starboard Channel</label>
+      <select name="channelId">
+        <option value="">None</option>
+        <% channels.forEach(function(c) { %>
+        <option value="<%= c.id %>" <%= guildDoc.starboard.channelId===c.id?'selected':'' %>>#<%= c.name %></option>
+        <% }); %>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Star Threshold</label>
+      <input type="number" name="threshold" value="<%= guildDoc.starboard.threshold||3 %>" min="1" max="50">
+    </div>
+    <div class="form-group">
+      <label>Star Emoji</label>
+      <input type="text" name="emoji" value="<%= guildDoc.starboard.emoji||'⭐' %>" maxlength="8">
+    </div>
+  </div>
+  <div class="card-footer">
+    <button type="button" class="btn btn-primary" onclick="saveForm('starboard-form','/guild/<%= guild.id %>/starboard')">Save Changes</button>
+  </div>
+</div>
+</form>
+
+<%- include('partials/foot') %>
