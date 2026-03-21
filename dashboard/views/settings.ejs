@@ -1,1 +1,224 @@
+<%- include('partials/head') %>
 
+<div class="tabs">
+  <button class="tab active" data-tab="general">General</button>
+  <button class="tab" data-tab="economy">Economy</button>
+  <button class="tab" data-tab="danger">Danger Zone</button>
+</div>
+
+<!-- ── General ──────────────────────────────────────────────────────────────── -->
+<div class="tab-panel active" id="tab-general">
+  <form id="settings-general-form">
+  <div class="card">
+    <div class="card-header">General Settings</div>
+    <div class="card-body form-grid">
+
+      <div class="form-group">
+        <label>Bot Prefix <small>Legacy fallback</small></label>
+        <input type="text" name="prefix" value="<%= guildDoc.prefix || '!' %>" maxlength="5">
+      </div>
+
+      <div class="form-group">
+        <label>Mute Role</label>
+        <select name="muteRoleId">
+          <option value="">None</option>
+          <% roles.forEach(function(r) { %>
+          <option value="<%= r.id %>" <%= guildDoc.muteRoleId===r.id?'selected':'' %>><%= r.name %></option>
+          <% }); %>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Suggestion Channel</label>
+        <select name="suggestionChannelId">
+          <option value="">None</option>
+          <% channels.forEach(function(c) { %>
+          <option value="<%= c.id %>" <%= guildDoc.suggestionChannelId===c.id?'selected':'' %>>#<%= c.name %></option>
+          <% }); %>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Birthday Channel</label>
+        <select name="birthdayChannelId">
+          <option value="">None</option>
+          <% channels.forEach(function(c) { %>
+          <option value="<%= c.id %>" <%= guildDoc.birthdayChannelId===c.id?'selected':'' %>>#<%= c.name %></option>
+          <% }); %>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Birthday Role</label>
+        <select name="birthdayRoleId">
+          <option value="">None</option>
+          <% roles.forEach(function(r) { %>
+          <option value="<%= r.id %>" <%= guildDoc.birthdayRoleId===r.id?'selected':'' %>><%= r.name %></option>
+          <% }); %>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Partner Channel</label>
+        <select name="partnerChannelId">
+          <option value="">None</option>
+          <% channels.forEach(function(c) { %>
+          <option value="<%= c.id %>" <%= guildDoc.partnerChannelId===c.id?'selected':'' %>>#<%= c.name %></option>
+          <% }); %>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Boost Announcement Channel</label>
+        <select name="boostChannelId">
+          <option value="">None</option>
+          <% channels.forEach(function(c) { %>
+          <option value="<%= c.id %>" <%= guildDoc.boostChannelId===c.id?'selected':'' %>>#<%= c.name %></option>
+          <% }); %>
+        </select>
+      </div>
+
+      <div class="form-group span-2">
+        <label>Boost Announcement Message <small>Variables: {user} {server} {count}</small></label>
+        <input type="text" name="boostMessage" value="<%= guildDoc.boostMessage || '{user} just boosted **{server}**! 💎 We now have {count} boosts!' %>">
+      </div>
+
+    </div>
+    <div class="card-footer">
+      <button type="button" class="btn btn-primary" onclick="saveForm('settings-general-form','/guild/<%= guild.id %>/settings/general')">Save Changes</button>
+    </div>
+  </div>
+  </form>
+</div>
+
+<!-- ── Economy ──────────────────────────────────────────────────────────────── -->
+<div class="tab-panel" id="tab-economy">
+  <form id="settings-economy-form">
+  <div class="card">
+    <div class="card-header">Economy Settings</div>
+    <div class="card-body form-grid">
+
+      <div class="form-group">
+        <label>Status</label>
+        <select name="enabled">
+          <option value="true"  <%= guildDoc.economy && guildDoc.economy.enabled!==false?'selected':'' %>>Enabled</option>
+          <option value="false" <%= guildDoc.economy && guildDoc.economy.enabled===false?'selected':'' %>>Disabled</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Currency Emoji</label>
+        <input type="text" name="currencyEmoji" value="<%= guildDoc.economy && guildDoc.economy.currencyEmoji ? guildDoc.economy.currencyEmoji : '🪙' %>" maxlength="8">
+      </div>
+
+      <div class="form-group">
+        <label>Daily Reward Amount</label>
+        <input type="number" name="dailyAmount" value="<%= guildDoc.economy && guildDoc.economy.dailyAmount ? guildDoc.economy.dailyAmount : 100 %>" min="1" max="999999">
+      </div>
+
+      <div class="form-group">
+        <label>Starting Balance</label>
+        <input type="number" name="startingBalance" value="<%= guildDoc.economy && guildDoc.economy.startingBalance ? guildDoc.economy.startingBalance : 0 %>" min="0" max="999999">
+      </div>
+
+      <div class="form-group">
+        <label>Work Min Reward</label>
+        <input type="number" name="workMin" value="<%= guildDoc.economy && guildDoc.economy.workMin ? guildDoc.economy.workMin : 50 %>" min="1" max="999999">
+      </div>
+
+      <div class="form-group">
+        <label>Work Max Reward</label>
+        <input type="number" name="workMax" value="<%= guildDoc.economy && guildDoc.economy.workMax ? guildDoc.economy.workMax : 200 %>" min="1" max="999999">
+      </div>
+
+    </div>
+    <div class="card-footer">
+      <button type="button" class="btn btn-primary" onclick="saveForm('settings-economy-form','/guild/<%= guild.id %>/settings/economy')">Save Changes</button>
+    </div>
+  </div>
+  </form>
+</div>
+
+<!-- ── Danger Zone ──────────────────────────────────────────────────────────── -->
+<div class="tab-panel" id="tab-danger">
+  <div class="card" style="border-color:var(--error)">
+    <div class="card-header" style="color:var(--error)">⚠️ Danger Zone</div>
+    <div class="card-body">
+      <p style="color:var(--text-secondary);margin-bottom:20px">
+        These actions reset individual feature configurations to their defaults. They cannot be undone.
+        <% if (guild.ownerId !== user.id) { %>
+        <br><strong style="color:var(--error)">Full reset is restricted to the server owner.</strong>
+        <% } %>
+      </p>
+
+      <div style="display:flex;flex-direction:column;gap:12px">
+
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg-raised);border-radius:var(--radius-md);border:1px solid var(--border)">
+          <div>
+            <strong>Reset Welcome Config</strong>
+            <p style="font-size:12px;color:var(--text-muted);margin-top:2px">Disables welcome messages and clears all welcome settings.</p>
+          </div>
+          <button class="btn btn-sm btn-danger" onclick="resetSection('<%= guild.id %>','welcome')">Reset</button>
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg-raised);border-radius:var(--radius-md);border:1px solid var(--border)">
+          <div>
+            <strong>Reset Automod Config</strong>
+            <p style="font-size:12px;color:var(--text-muted);margin-top:2px">Disables all automod filters and clears banned word list.</p>
+          </div>
+          <button class="btn btn-sm btn-danger" onclick="resetSection('<%= guild.id %>','automod')">Reset</button>
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg-raised);border-radius:var(--radius-md);border:1px solid var(--border)">
+          <div>
+            <strong>Reset Leveling Config</strong>
+            <p style="font-size:12px;color:var(--text-muted);margin-top:2px">Resets XP rates and clears announce channel. Does not delete XP data.</p>
+          </div>
+          <button class="btn btn-sm btn-danger" onclick="resetSection('<%= guild.id %>','leveling')">Reset</button>
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg-raised);border-radius:var(--radius-md);border:1px solid var(--border)">
+          <div>
+            <strong>Reset Economy Config</strong>
+            <p style="font-size:12px;color:var(--text-muted);margin-top:2px">Resets daily/work amounts and currency emoji. Does not delete balances.</p>
+          </div>
+          <button class="btn btn-sm btn-danger" onclick="resetSection('<%= guild.id %>','economy')">Reset</button>
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg-raised);border-radius:var(--radius-md);border:1px solid var(--border)">
+          <div>
+            <strong>Reset Starboard Config</strong>
+            <p style="font-size:12px;color:var(--text-muted);margin-top:2px">Disables starboard and clears channel and threshold.</p>
+          </div>
+          <button class="btn btn-sm btn-danger" onclick="resetSection('<%= guild.id %>','starboard')">Reset</button>
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg-raised);border-radius:var(--radius-md);border:1px solid var(--border)">
+          <div>
+            <strong>Reset Counting Config</strong>
+            <p style="font-size:12px;color:var(--text-muted);margin-top:2px">Disables counting and resets current count and highscore to 0.</p>
+          </div>
+          <button class="btn btn-sm btn-danger" onclick="resetSection('<%= guild.id %>','counting')">Reset</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+async function resetSection(guildId, section) {
+  if (!confirm('Reset ' + section + ' settings to defaults? This cannot be undone.')) return;
+  try {
+    const res  = await fetch('/guild/' + guildId + '/settings/reset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ section }),
+    });
+    const json = await res.json();
+    toast(json.success ? (json.message || section + ' reset to defaults.') : (json.error || 'Failed.'), json.success ? 'success' : 'error');
+  } catch { toast('Network error.', 'error'); }
+}
+</script>
+
+<%- include('partials/foot') %>
