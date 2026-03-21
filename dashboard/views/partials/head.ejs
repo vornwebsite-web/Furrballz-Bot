@@ -5,15 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= title %> — <%= botName %></title>
   <link rel="stylesheet" href="/style.css">
-  <link rel="icon" href="https://cdn.discordapp.com/embed/avatars/0.png">
 </head>
 <body>
 <div class="app">
+
   <aside class="sidebar">
     <div class="sidebar-header">
-      <span class="sidebar-logo">🐾</span>
+      <div class="sidebar-logo">🐾</div>
       <span class="sidebar-name"><%= botName %></span>
     </div>
+
     <% if (typeof guild !== 'undefined' && guild) { %>
     <div class="sidebar-guild">
       <% if (guild.iconURL && guild.iconURL()) { %>
@@ -23,44 +24,103 @@
       <% } %>
       <span class="guild-name"><%= guild.name %></span>
     </div>
+
     <nav class="sidebar-nav">
       <% const p = typeof pageSlug !== 'undefined' ? pageSlug : ''; %>
-      <a href="/guild/<%= guild.id %>"                class="nav-item <%= p==='overview'   ?'active':'' %>">Overview</a>
-      <a href="/guild/<%= guild.id %>/moderation"      class="nav-item <%= p==='moderation'  ?'active':'' %>">Moderation</a>
-      <a href="/guild/<%= guild.id %>/tickets"         class="nav-item <%= p==='tickets'     ?'active':'' %>">Tickets</a>
-      <a href="/guild/<%= guild.id %>/logging"         class="nav-item <%= p==='logging'     ?'active':'' %>">Logging</a>
-      <a href="/guild/<%= guild.id %>/automod"         class="nav-item <%= p==='automod'     ?'active':'' %>">Automod</a>
-      <a href="/guild/<%= guild.id %>/welcome"         class="nav-item <%= p==='welcome'     ?'active':'' %>">Welcome</a>
-      <a href="/guild/<%= guild.id %>/roles"           class="nav-item <%= p==='roles'       ?'active':'' %>">Roles</a>
-      <a href="/guild/<%= guild.id %>/levels"          class="nav-item <%= p==='levels'      ?'active':'' %>">Leveling</a>
-      <a href="/guild/<%= guild.id %>/economy"         class="nav-item <%= p==='economy'     ?'active':'' %>">Economy</a>
-      <a href="/guild/<%= guild.id %>/giveaways"       class="nav-item <%= p==='giveaways'   ?'active':'' %>">Giveaways</a>
-      <a href="/guild/<%= guild.id %>/social"          class="nav-item <%= p==='social'      ?'active':'' %>">Social</a>
-      <a href="/guild/<%= guild.id %>/starboard"       class="nav-item <%= p==='starboard'   ?'active':'' %>">Starboard</a>
-      <a href="/guild/<%= guild.id %>/counting"        class="nav-item <%= p==='counting'    ?'active':'' %>">Counting</a>
-      <a href="/guild/<%= guild.id %>/suggestions"     class="nav-item <%= p==='suggestions' ?'active':'' %>">Suggestions</a>
-      <a href="/guild/<%= guild.id %>/antinuke"        class="nav-item <%= p==='antinuke'    ?'active':'' %>">Anti-Nuke</a>
-      <a href="/guild/<%= guild.id %>/backup"          class="nav-item <%= p==='backup'      ?'active':'' %>">Backup</a>
-      <a href="/guild/<%= guild.id %>/settings"        class="nav-item <%= p==='settings'    ?'active':'' %>">Settings</a>
+
+      <div class="nav-section-label">Overview</div>
+      <a href="/guild/<%= guild.id %>" class="nav-item <%= p==='overview'?'active':'' %>">
+        <span class="nav-icon">📊</span> Overview
+      </a>
+
+      <div class="nav-section-label">Moderation</div>
+      <a href="/guild/<%= guild.id %>/moderation"  class="nav-item <%= p==='moderation'?'active':'' %>">
+        <span class="nav-icon">🔨</span> Moderation
+      </a>
+      <a href="/guild/<%= guild.id %>/tickets"      class="nav-item <%= p==='tickets'?'active':'' %>">
+        <span class="nav-icon">🎫</span> Tickets
+      </a>
+      <a href="/guild/<%= guild.id %>/logging"      class="nav-item <%= p==='logging'?'active':'' %>">
+        <span class="nav-icon">📋</span> Logging
+      </a>
+      <a href="/guild/<%= guild.id %>/automod"      class="nav-item <%= p==='automod'?'active':'' %>">
+        <span class="nav-icon">🛡️</span> Automod
+      </a>
+      <a href="/guild/<%= guild.id %>/antinuke"     class="nav-item <%= p==='antinuke'?'active':'' %>">
+        <span class="nav-icon">☢️</span> Anti-Nuke
+      </a>
+
+      <div class="nav-section-label">Community</div>
+      <a href="/guild/<%= guild.id %>/welcome"      class="nav-item <%= p==='welcome'?'active':'' %>">
+        <span class="nav-icon">👋</span> Welcome
+      </a>
+      <a href="/guild/<%= guild.id %>/roles"        class="nav-item <%= p==='roles'?'active':'' %>">
+        <span class="nav-icon">🎭</span> Roles
+      </a>
+      <a href="/guild/<%= guild.id %>/levels"       class="nav-item <%= p==='levels'?'active':'' %>">
+        <span class="nav-icon">⬆️</span> Leveling
+      </a>
+      <a href="/guild/<%= guild.id %>/economy"      class="nav-item <%= p==='economy'?'active':'' %>">
+        <span class="nav-icon">💰</span> Economy
+      </a>
+      <a href="/guild/<%= guild.id %>/giveaways"    class="nav-item <%= p==='giveaways'?'active':'' %>">
+        <span class="nav-icon">🎉</span> Giveaways
+      </a>
+      <a href="/guild/<%= guild.id %>/suggestions"  class="nav-item <%= p==='suggestions'?'active':'' %>">
+        <span class="nav-icon">💡</span> Suggestions
+      </a>
+      <a href="/guild/<%= guild.id %>/starboard"    class="nav-item <%= p==='starboard'?'active':'' %>">
+        <span class="nav-icon">⭐</span> Starboard
+      </a>
+      <a href="/guild/<%= guild.id %>/counting"     class="nav-item <%= p==='counting'?'active':'' %>">
+        <span class="nav-icon">🔢</span> Counting
+      </a>
+
+      <div class="nav-section-label">Integrations</div>
+      <a href="/guild/<%= guild.id %>/social"       class="nav-item <%= p==='social'?'active':'' %>">
+        <span class="nav-icon">📡</span> Social
+      </a>
+
+      <div class="nav-section-label">Server</div>
+      <a href="/guild/<%= guild.id %>/backup"       class="nav-item <%= p==='backup'?'active':'' %>">
+        <span class="nav-icon">💾</span> Backup
+      </a>
+      <a href="/guild/<%= guild.id %>/settings"     class="nav-item <%= p==='settings'?'active':'' %>">
+        <span class="nav-icon">⚙️</span> Settings
+      </a>
     </nav>
     <% } %>
+
     <div class="sidebar-footer">
       <% if (typeof user !== 'undefined' && user) { %>
-        <img src="https://cdn.discordapp.com/avatars/<%= user.id %>/<%= user.avatar %>.png?size=32" class="user-avatar" alt="">
+        <img src="https://cdn.discordapp.com/avatars/<%= user.id %>/<%= user.avatar %>.png?size=32" class="user-avatar" alt="" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
         <span class="user-tag"><%= user.username %></span>
-        <a href="/auth/logout" class="logout-btn">Out</a>
+        <a href="/auth/logout" class="logout-btn">Sign out</a>
       <% } %>
     </div>
   </aside>
+
   <main class="main">
     <div class="topbar">
-      <h1 class="page-title"><%= title %></h1>
+      <div>
+        <% if (typeof guild !== 'undefined' && guild) { %>
+        <div class="topbar-breadcrumb">
+          <a href="/guilds">Servers</a>
+          <span>›</span>
+          <span><%= guild.name %></span>
+          <span>›</span>
+          <span><%= title.split(' —')[0] %></span>
+        </div>
+        <% } %>
+        <h1 class="page-title"><%= title.split(' —')[0] %></h1>
+      </div>
       <div class="topbar-actions">
         <button class="btn-icon" onclick="toggleTheme()" title="Toggle theme">◑</button>
         <% if (typeof guild !== 'undefined' && guild) { %>
-          <a href="/guilds" class="btn btn-sm">Switch Server</a>
+          <a href="/guilds" class="btn btn-sm btn-outline">Switch Server</a>
         <% } %>
       </div>
     </div>
+
     <div class="content">
       <div id="toast-container"></div>
