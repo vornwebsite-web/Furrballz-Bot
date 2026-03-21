@@ -1,54 +1,50 @@
-<%- include('layout', { body: `
+<%- include('partials/head') %>
+
 <form id="antinuke-form">
 <div class="card">
   <div class="card-header">Anti-Nuke Protection</div>
   <div class="card-body form-grid">
-
     <div class="form-group">
       <label>Status</label>
       <select name="enabled">
-        <option value="true"  ${cfg.enabled?'selected':''}>🟢 Enabled</option>
-        <option value="false" ${!cfg.enabled?'selected':''}>🔴 Disabled</option>
+        <option value="true"  <%= cfg.enabled?'selected':'' %>>🟢 Enabled</option>
+        <option value="false" <%= !cfg.enabled?'selected':'' %>>🔴 Disabled</option>
       </select>
     </div>
-
     <div class="form-group">
       <label>Punishment</label>
       <select name="punishment">
-        <option value="ban"     ${cfg.punishment==='ban'    ?'selected':''}>Ban</option>
-        <option value="kick"    ${cfg.punishment==='kick'   ?'selected':''}>Kick</option>
-        <option value="strip"   ${cfg.punishment==='strip'  ?'selected':''}>Strip Roles</option>
-        <option value="deowner" ${cfg.punishment==='deowner'?'selected':''}>De-Owner</option>
-        <option value="timeout" ${cfg.punishment==='timeout'?'selected':''}>Timeout 24h</option>
+        <option value="ban"     <%= cfg.punishment==='ban'    ?'selected':'' %>>Ban</option>
+        <option value="kick"    <%= cfg.punishment==='kick'   ?'selected':'' %>>Kick</option>
+        <option value="strip"   <%= cfg.punishment==='strip'  ?'selected':'' %>>Strip Roles</option>
+        <option value="deowner" <%= cfg.punishment==='deowner'?'selected':'' %>>De-Owner</option>
+        <option value="timeout" <%= cfg.punishment==='timeout'?'selected':'' %>>Timeout 24h</option>
       </select>
     </div>
-
     <div class="form-group">
       <label>Alert Log Channel</label>
       <select name="logChannelId">
         <option value="">None</option>
-        <% channels.forEach(c => { %>
-        <option value="${c.id}" ${cfg.logChannelId===c.id?'selected':''}>#${c.name}</option>
+        <% channels.forEach(function(c) { %>
+        <option value="<%= c.id %>" <%= cfg.logChannelId===c.id?'selected':'' %>>#<%= c.name %></option>
         <% }); %>
       </select>
     </div>
-
     <div class="form-group">
       <label>Detection Window (seconds)</label>
-      <input type="number" name="windowSeconds" value="${cfg.windowSeconds||10}" min="5" max="60">
+      <input type="number" name="windowSeconds" value="<%= cfg.windowSeconds||10 %>" min="5" max="60">
     </div>
-
   </div>
   <div class="card-footer">
-    <button type="button" class="btn btn-primary" onclick="saveForm('antinuke-form','/guild/${guild.id}/antinuke')">Save Settings</button>
+    <button type="button" class="btn btn-primary" onclick="saveForm('antinuke-form','/guild/<%= guild.id %>/antinuke')">Save Settings</button>
   </div>
 </div>
 </form>
 
 <div class="card" style="margin-top:1.5rem">
   <div class="card-header">Action Thresholds</div>
-  <div class="card-body form-grid" id="threshold-form">
-    <% const thresholdFields = [
+  <div class="card-body form-grid">
+    <% var thresholdFields = [
       { key: 'channelCreate', label: 'Channel Create' },
       { key: 'channelDelete', label: 'Channel Delete' },
       { key: 'roleCreate',    label: 'Role Create'    },
@@ -58,38 +54,36 @@
       { key: 'webhookCreate', label: 'Webhook Create' },
       { key: 'roleStrip',     label: 'Role Strip'     },
     ]; %>
-    <% thresholdFields.forEach(f => { %>
+    <% thresholdFields.forEach(function(f) { %>
     <div class="form-group">
-      <label>${f.label} <small>actions before trigger</small></label>
-      <input type="number" id="th-${f.key}" name="${f.key}" value="${cfg.thresholds?.[f.key]||5}" min="1" max="25">
+      <label><%= f.label %> <small>actions before trigger</small></label>
+      <input type="number" id="th-<%= f.key %>" name="<%= f.key %>" value="<%= cfg.thresholds && cfg.thresholds[f.key] ? cfg.thresholds[f.key] : 5 %>" min="1" max="25">
     </div>
     <% }); %>
     <div class="form-actions span-2">
-      <button type="button" class="btn btn-primary" onclick="saveThresholds('${guild.id}')">Save Thresholds</button>
+      <button type="button" class="btn btn-primary" onclick="saveThresholds('<%= guild.id %>')">Save Thresholds</button>
     </div>
   </div>
 </div>
 
 <div class="card" style="margin-top:1.5rem">
-  <div class="card-header">
-    Whitelist
-    <span class="badge">${cfg.whitelist?.length||0} entries</span>
-  </div>
+  <div class="card-header">Whitelist <span class="badge"><%= cfg.whitelist ? cfg.whitelist.length : 0 %> entries</span></div>
   <div class="card-body">
     <div style="display:flex;gap:8px;margin-bottom:16px">
       <input type="text" id="wl-userid" placeholder="User or Bot ID" style="flex:1;max-width:260px">
-      <button class="btn btn-sm btn-primary" onclick="addWhitelist('${guild.id}')">Add to Whitelist</button>
+      <button class="btn btn-sm btn-primary" onclick="addWhitelist('<%= guild.id %>')">Add to Whitelist</button>
     </div>
     <table class="table">
       <thead><tr><th>User ID</th><th></th></tr></thead>
       <tbody id="whitelist-table">
-        <% (cfg.whitelist||[]).forEach(id => { %>
-        <tr id="wl-row-${id}">
-          <td><code>${id}</code></td>
-          <td><button class="btn btn-sm btn-danger" onclick="removeWhitelist('${guild.id}','${id}')">Remove</button></td>
-        </tr>
-        <% }); %>
-        <% if (!cfg.whitelist?.length) { %>
+        <% if (cfg.whitelist && cfg.whitelist.length) { %>
+          <% cfg.whitelist.forEach(function(wlId) { %>
+          <tr id="wl-row-<%= wlId %>">
+            <td><code><%= wlId %></code></td>
+            <td><button class="btn btn-sm btn-danger" onclick="removeWhitelist('<%= guild.id %>','<%= wlId %>')">Remove</button></td>
+          </tr>
+          <% }); %>
+        <% } else { %>
         <tr id="wl-empty"><td colspan="2" class="empty-row">No whitelisted users.</td></tr>
         <% } %>
       </tbody>
@@ -98,21 +92,24 @@
 </div>
 
 <div class="card" style="margin-top:1.5rem">
-  <div class="card-header">Recent Alert Log <span class="badge">${(cfg.actionLog||[]).length}</span></div>
+  <div class="card-header">Recent Alert Log <span class="badge"><%= cfg.actionLog ? cfg.actionLog.length : 0 %></span></div>
   <div class="card-body p-0">
     <table class="table">
       <thead><tr><th>User ID</th><th>Action</th><th>Count</th><th>Punishment</th><th>When</th></tr></thead>
       <tbody>
-        <% (cfg.actionLog||[]).slice().reverse().slice(0,20).forEach(a => { %>
-        <tr>
-          <td><code>${a.userId}</code></td>
-          <td><span class="badge">${a.action}</span></td>
-          <td>${a.count}</td>
-          <td><span class="badge badge-danger">${a.punishment}</span></td>
-          <td>${new Date(a.triggeredAt).toLocaleString()}</td>
-        </tr>
-        <% }); %>
-        <% if (!cfg.actionLog?.length) { %><tr><td colspan="5" class="empty-row">No alerts triggered yet.</td></tr><% } %>
+        <% if (cfg.actionLog && cfg.actionLog.length) { %>
+          <% cfg.actionLog.slice().reverse().slice(0,20).forEach(function(a) { %>
+          <tr>
+            <td><code><%= a.userId %></code></td>
+            <td><span class="badge"><%= a.action %></span></td>
+            <td><%= a.count %></td>
+            <td><span class="badge badge-danger"><%= a.punishment %></span></td>
+            <td><%= new Date(a.triggeredAt).toLocaleString() %></td>
+          </tr>
+          <% }); %>
+        <% } else { %>
+        <tr><td colspan="5" class="empty-row">No alerts triggered yet.</td></tr>
+        <% } %>
       </tbody>
     </table>
   </div>
@@ -128,22 +125,19 @@ async function saveThresholds(guildId) {
   });
   try {
     const res  = await fetch('/guild/' + guildId + '/antinuke', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ thresholds: JSON.stringify(thresholds) }),
     });
     const json = await res.json();
     toast(json.success ? 'Thresholds saved!' : (json.error||'Error'), json.success ? 'success' : 'error');
   } catch { toast('Network error.','error'); }
 }
-
 async function addWhitelist(guildId) {
   const userId = document.getElementById('wl-userid').value.trim();
   if (!userId) return toast('Enter a user ID.','error');
   try {
     const res  = await fetch('/guild/' + guildId + '/antinuke/whitelist', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId }),
     });
     const json = await res.json();
@@ -152,25 +146,25 @@ async function addWhitelist(guildId) {
       const empty = document.getElementById('wl-empty');
       if (empty) empty.remove();
       const tbody = document.getElementById('whitelist-table');
-      const row   = document.createElement('tr');
-      row.id      = 'wl-row-' + userId;
-      row.innerHTML = '<td><code>' + userId + '</code></td><td><button class="btn btn-sm btn-danger" onclick="removeWhitelist(\\'' + guildId + '\\',\\'' + userId + '\\')">Remove</button></td>';
+      const row = document.createElement('tr');
+      row.id = 'wl-row-' + userId;
+      row.innerHTML = '<td><code>' + userId + '</code></td><td><button class="btn btn-sm btn-danger" onclick="removeWhitelist(\'' + guildId + '\',\'' + userId + '\')">Remove</button></td>';
       tbody.appendChild(row);
       document.getElementById('wl-userid').value = '';
     } else { toast(json.error||'Error','error'); }
   } catch { toast('Network error.','error'); }
 }
-
 async function removeWhitelist(guildId, userId) {
   try {
     const res  = await fetch('/guild/' + guildId + '/antinuke/whitelist/' + userId, { method: 'DELETE' });
     const json = await res.json();
     if (json.success) {
-      toast('Removed from whitelist.','success');
+      toast('Removed.','success');
       const row = document.getElementById('wl-row-' + userId);
       if (row) row.remove();
     } else { toast(json.error||'Error','error'); }
   } catch { toast('Network error.','error'); }
 }
 </script>
-` }) %>
+
+<%- include('partials/foot') %>
