@@ -1,1 +1,119 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Owner Panel</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-header"><span class="sidebar-logo">🐾</span><span class="sidebar-name">Owner Panel</span></div>
+    <nav class="sidebar-nav">
+      <a href="/guilds" class="nav-item">← Back to Servers</a>
+    </nav>
+    <div class="sidebar-footer">
+      <% if (user) { %>
+        <img src="https://cdn.discordapp.com/avatars/<%= user.id %>/<%= user.avatar %>.png?size=32" class="user-avatar" alt="">
+        <span class="user-tag"><%= user.username %></span>
+        <a href="/auth/logout" class="logout-btn">Out</a>
+      <% } %>
+    </div>
+  </aside>
+  <main class="main">
+    <div class="topbar"><h1 class="page-title">Owner Panel</h1></div>
+    <div class="content">
 
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-value"><%= guildCount %></div><div class="stat-label">Servers</div></div>
+      <div class="stat-card"><div class="stat-value"><%= userCount.toLocaleString() %></div><div class="stat-label">Cached Users</div></div>
+      <div class="stat-card"><div class="stat-value"><%= Math.floor(uptime/60) %>m</div><div class="stat-label">Uptime</div></div>
+      <div class="stat-card"><div class="stat-value"><%= memory %> MB</div><div class="stat-label">Memory</div></div>
+    </div>
+
+    <div class="row">
+      <div class="col">
+        <div class="card">
+          <div class="card-header">Bot Mode</div>
+          <div class="card-body">
+            <p>Current mode: <strong><%= cfg.mode %></strong></p>
+            <div style="display:flex;gap:8px;margin-top:12px">
+              <button class="btn btn-sm <%= cfg.mode==='public'?'btn-primary':'' %>" onclick="setMode('public')">Public</button>
+              <button class="btn btn-sm <%= cfg.mode==='private'?'btn-primary':'' %>" onclick="setMode('private')">Private</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card">
+          <div class="card-header">Maintenance</div>
+          <div class="card-body">
+            <p>Status: <strong><%= cfg.maintenance ? 'ON' : 'OFF' %></strong></p>
+            <div style="display:flex;gap:8px;margin-top:12px">
+              <button class="btn btn-sm <%= cfg.maintenance?'btn-danger':'' %>" onclick="setMaintenance(true)">Enable</button>
+              <button class="btn btn-sm <%= !cfg.maintenance?'btn-success':'' %>" onclick="setMaintenance(false)">Disable</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:1.5rem">
+      <div class="card-header">Blacklist</div>
+      <div class="card-body">
+        <div style="display:flex;gap:8px;margin-bottom:16px">
+          <input type="text" id="bl-id" placeholder="User or Guild ID" style="flex:1">
+          <select id="bl-type"><option value="user">User</option><option value="guild">Guild</option></select>
+          <input type="text" id="bl-reason" placeholder="Reason">
+          <button class="btn btn-sm btn-danger" onclick="addBlacklist()">Blacklist</button>
+        </div>
+        <table class="table">
+          <thead><tr><th>ID</th><th>Type</th><th>Reason</th><th>Date</th><th></th></tr></thead>
+          <tbody>
+            <% blacklist.forEach(b => { %>
+            <tr>
+              <td><code><%= b.targetId %></code></td>
+              <td><span class="badge"><%= b.targetType %></span></td>
+              <td><%= b.reason %></td>
+              <td><%= new Date(b.createdAt).toLocaleDateString() %></td>
+              <td><button class="btn btn-sm" onclick="removeBlacklist('<%= b._id %>', this)">Remove</button></td>
+            </tr>
+            <% }); %>
+            <% if (!blacklist.length) { %><tr><td colspan="5" class="empty-row">No blacklisted entries.</td></tr><% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:1.5rem">
+      <div class="card-header">All Servers (<%= guilds.length %>)</div>
+      <div class="card-body p-0">
+        <table class="table">
+          <thead><tr><th>Name</th><th>ID</th><th>Members</th><th>Allowed</th><th>Actions</th></tr></thead>
+          <tbody>
+            <% guilds.forEach(g => { %>
+            <tr>
+              <td><% if(g.icon){%><img src="<%=g.icon%>" style="width:20px;height:20px;border-radius:50%;margin-right:6px;vertical-align:middle"><%}%><%= g.name %></td>
+              <td><code><%= g.id %></code></td>
+              <td><%= g.memberCount.toLocaleString() %></td>
+              <td><span class="badge badge-<%= cfg.allowedGuilds&&cfg.allowedGuilds.includes(g.id)?'success':'muted' %>"><%= cfg.allowedGuilds&&cfg.allowedGuilds.includes(g.id)?'Yes':'No' %></span></td>
+              <td>
+                <button class="btn btn-sm" onclick="toggleAllowed('<%= g.id %>', <%= cfg.allowedGuilds&&cfg.allowedGuilds.includes(g.id) %>, this)">
+                  <%= cfg.allowedGuilds&&cfg.allowedGuilds.includes(g.id)?'Disallow':'Allow' %>
+                </button>
+              </td>
+            </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    </div>
+  </main>
+</div>
+<script src="/theme.js"></script>
+<script src="/dashboard.js"></script>
+</body>
+</html>
