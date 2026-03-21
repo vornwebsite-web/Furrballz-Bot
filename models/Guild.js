@@ -131,6 +131,16 @@ const GuildSchema = new Schema({
   boostMessage:        { type: String,  default: null  },
   boostRoleId:         { type: String,  default: null  }, // role assigned when member boosts
   inviteLogChannelId:  { type: String,  default: null  }, // channel for invite join messages
+
+  // ── Alt / new account protection ───────────────────────────────────────────
+  altProtection: {
+    enabled:           { type: Boolean, default: false },
+    minAccountAgeDays: { type: Number,  default: 7     }, // kick if account younger than X days
+    action:            { type: String,  default: 'kick', enum: ['kick', 'ban', 'alert'] },
+    alertChannelId:    { type: String,  default: null  }, // channel to alert mods (always used)
+    ignoreInviterId:   { type: [String],default: []    }, // inviter IDs exempt from alt check
+    blockDefaultAvatar:{ type: Boolean, default: false }, // also flag accounts with no avatar
+  },
   tempVoiceCategoryId: { type: String,  default: null  },
   tempVoiceTriggerChannelId: { type: String, default: null },
 
