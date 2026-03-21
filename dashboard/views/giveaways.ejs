@@ -1,29 +1,33 @@
 <%- include('partials/head') %>
 
 <div class="tabs">
-  <a href="?tab=active" class="tab <%= tab==='active'?'active':'' %>">Active</a>
-  <a href="?tab=ended"  class="tab <%= tab==='ended' ?'active':'' %>">Ended</a>
+  <a href="?tab=active" class="tab <%= tab==='active'?'active':'' %>">🎉 Active</a>
+  <a href="?tab=ended"  class="tab <%= tab==='ended' ?'active':'' %>">✅ Ended</a>
 </div>
 
 <% var list = tab === 'ended' ? ended : active; %>
 <div class="card">
-  <div class="card-header"><%= tab==='active'?'Active':'Ended' %> Giveaways <span class="badge"><%= list.length %></span></div>
+  <div class="card-header">
+    <span class="card-header-icon"><%= tab==='active'?'🎉':'✅' %></span>
+    <%= tab==='active'?'Active':'Ended' %> Giveaways
+    <span class="badge <%= tab==='active'?'badge-success':'badge-muted' %>" style="margin-left:auto"><%= list.length %></span>
+  </div>
   <div class="card-body p-0">
     <table class="table">
-      <thead><tr><th>Prize</th><th>Channel</th><th>Entries</th><th>Winners</th><th>Ends/Ended</th><th>Actions</th></tr></thead>
+      <thead><tr><th>Prize</th><th>Channel</th><th>Entries</th><th>Winners</th><th>Date</th><th></th></tr></thead>
       <tbody>
         <% list.forEach(function(g) { %>
         <tr>
-          <td><%= g.prize %></td>
+          <td><strong><%= g.prize %></strong></td>
           <td><code><%= g.channelId %></code></td>
-          <td><%= g.entries.length %></td>
+          <td><span class="badge badge-accent"><%= g.entries.length %></span></td>
           <td><%= g.winnersCount %></td>
           <td><%= new Date(g.endsAt).toLocaleDateString() %></td>
           <td>
             <% if (!g.ended) { %>
-            <button class="btn btn-sm btn-danger" onclick="endGiveaway('<%= guild.id %>','<%= g._id %>',this)">End</button>
+            <button class="btn btn-xs btn-danger" onclick="endGiveaway('<%= guild.id %>','<%= g._id %>',this)">End Early</button>
             <% } else { %>
-            <button class="btn btn-sm" onclick="rerollGiveaway('<%= guild.id %>','<%= g._id %>',this)">Reroll</button>
+            <button class="btn btn-xs" onclick="rerollGiveaway('<%= guild.id %>','<%= g._id %>',this)">Reroll</button>
             <% } %>
           </td>
         </tr>
