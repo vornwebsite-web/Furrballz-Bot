@@ -29,6 +29,9 @@ passport.use(new DiscordStrategy({
 // ── Create Express app ────────────────────────────────────────────────────────
 const app = express();
 
+// Trust Railway's reverse proxy so secure cookies work over HTTPS
+app.set('trust proxy', 1);
+
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '..', 'views'));
 
