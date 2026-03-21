@@ -1,1 +1,47 @@
+<%- include('partials/head') %>
 
+<form id="welcome-form">
+<div class="card">
+  <div class="card-header">Welcome Message</div>
+  <div class="card-body form-grid">
+    <div class="form-group">
+      <label>Status</label>
+      <select name="enabled">
+        <option value="true"  <%= guildDoc.welcome.enabled?'selected':'' %>>Enabled</option>
+        <option value="false" <%= !guildDoc.welcome.enabled?'selected':'' %>>Disabled</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Welcome Channel</label>
+      <select name="channelId">
+        <option value="">None</option>
+        <% channels.forEach(function(c) { %>
+        <option value="<%= c.id %>" <%= guildDoc.welcome.channelId===c.id?'selected':'' %>>#<%= c.name %></option>
+        <% }); %>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Auto Role on Join</label>
+      <select name="roleId">
+        <option value="">None</option>
+        <% roles.forEach(function(r) { %>
+        <option value="<%= r.id %>" <%= guildDoc.welcome.roleId===r.id?'selected':'' %>><%= r.name %></option>
+        <% }); %>
+      </select>
+    </div>
+    <div class="form-group span-2">
+      <label>Welcome Message <small>Variables: {user} {username} {server} {count}</small></label>
+      <textarea name="message" rows="3"><%= guildDoc.welcome.message||'Welcome {user} to **{server}**!' %></textarea>
+    </div>
+    <div class="form-group span-2">
+      <label>DM Message <small>Leave empty to disable</small></label>
+      <textarea name="dmMessage" rows="2"><%= guildDoc.welcome.dmMessage||'' %></textarea>
+    </div>
+  </div>
+  <div class="card-footer">
+    <button type="button" class="btn btn-primary" onclick="saveForm('welcome-form','/guild/<%= guild.id %>/welcome')">Save Changes</button>
+  </div>
+</div>
+</form>
+
+<%- include('partials/foot') %>
