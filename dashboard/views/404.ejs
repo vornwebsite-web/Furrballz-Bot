@@ -3,15 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>404 Not Found</title>
+  <title>404 — Page Not Found</title>
   <link rel="stylesheet" href="/style.css">
+  <style>
+    body { display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--bg-base); }
+    .error-card { text-align:center;padding:56px 48px;background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-xl);max-width:420px;width:90%; }
+    .error-code { font-size:80px;font-weight:900;color:var(--accent);line-height:1;letter-spacing:-4px;margin-bottom:12px; }
+    .error-title { font-size:22px;font-weight:700;margin-bottom:8px; }
+    .error-msg { font-size:14px;color:var(--text-muted);margin-bottom:28px;line-height:1.6; }
+  </style>
 </head>
-<body class="login-page">
-  <div class="login-card">
-    <div class="login-logo">🔍</div>
-    <h1 class="login-title">404</h1>
-    <p class="login-subtitle">Page not found.</p>
-    <a href="/" class="btn btn-primary" style="margin-top:20px">Go Home</a>
+<body>
+  <div class="error-card">
+    <div class="error-code">404</div>
+    <h1 class="error-title">Page Not Found</h1>
+    <p class="error-msg">The page you're looking for doesn't exist or has been moved.</p>
+    <a href="/" class="btn btn-primary">Go Home</a>
   </div>
   <script src="/theme.js"></script>
 </body>
