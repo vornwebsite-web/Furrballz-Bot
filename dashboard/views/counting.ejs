@@ -1,0 +1,42 @@
+<%- include('partials/head') %>
+
+<form id="counting-form">
+<div class="card">
+  <div class="card-header">Counting Configuration</div>
+  <div class="card-body form-grid">
+    <div class="form-group">
+      <label>Status</label>
+      <select name="enabled">
+        <option value="true"  <%= guildDoc.counting.enabled?'selected':'' %>>Enabled</option>
+        <option value="false" <%= !guildDoc.counting.enabled?'selected':'' %>>Disabled</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Counting Channel</label>
+      <select name="channelId">
+        <option value="">None</option>
+        <% channels.forEach(function(c) { %>
+        <option value="<%= c.id %>" <%= guildDoc.counting.channelId===c.id?'selected':'' %>>#<%= c.name %></option>
+        <% }); %>
+      </select>
+    </div>
+  </div>
+  <div class="card-footer">
+    <button type="button" class="btn btn-primary" onclick="saveForm('counting-form','/guild/<%= guild.id %>/counting')">Save Changes</button>
+    <button type="button" class="btn btn-danger" onclick="resetCount('<%= guild.id %>')">Reset Count</button>
+  </div>
+</div>
+</form>
+
+<div class="card" style="margin-top:1.5rem">
+  <div class="card-header">Stats</div>
+  <div class="card-body">
+    <div class="stats-row">
+      <div class="stat-mini"><span class="stat-mini-val"><%= guildDoc.counting.count||0 %></span><span class="stat-mini-label">Current Count</span></div>
+      <div class="stat-mini"><span class="stat-mini-val"><%= guildDoc.counting.highscore||0 %></span><span class="stat-mini-label">Highscore</span></div>
+      <div class="stat-mini"><span class="stat-mini-val"><%= guildDoc.counting.resetCount||0 %></span><span class="stat-mini-label">Times Broken</span></div>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/foot') %>
