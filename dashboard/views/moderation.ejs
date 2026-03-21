@@ -1,42 +1,44 @@
 <%- include('partials/head') %>
 
 <div class="tabs">
-  <button class="tab active" data-tab="warns">Warnings</button>
-  <button class="tab" data-tab="bans">Bans</button>
-  <button class="tab" data-tab="mutes">Active Mutes</button>
+  <button class="tab active" data-tab="warns">⚠️ Warnings</button>
+  <button class="tab" data-tab="bans">🔨 Bans</button>
+  <button class="tab" data-tab="mutes">🔇 Active Mutes</button>
 </div>
 
 <div class="tab-panel active" id="tab-warns">
   <div class="card">
-    <div class="card-header">Warnings <span class="badge"><%= warnTotal %> total</span></div>
+    <div class="card-header">
+      <span class="card-header-icon">⚠️</span> Warnings
+      <span class="badge badge-accent" style="margin-left:auto"><%= warnTotal %> total</span>
+    </div>
     <div class="card-body p-0">
       <table class="table">
-        <thead><tr><th>Case ID</th><th>User ID</th><th>Moderator</th><th>Reason</th><th>Date</th><th>Actions</th></tr></thead>
+        <thead><tr><th>Case ID</th><th>User</th><th>Moderator</th><th>Reason</th><th>Date</th><th>Status</th><th></th></tr></thead>
         <tbody>
           <% warns.forEach(function(w) { %>
           <tr>
             <td><code><%= w.caseId %></code></td>
             <td><code><%= w.userId %></code></td>
             <td><code><%= w.moderatorId %></code></td>
-            <td><%= w.reason.slice(0,60) %></td>
+            <td><%= w.reason.slice(0,50) %><%= w.reason.length>50?'…':'' %></td>
             <td><%= new Date(w.createdAt).toLocaleDateString() %></td>
+            <td><span class="badge <%= w.active?'badge-warning':'badge-muted' %>"><%= w.active?'Active':'Cleared' %></span></td>
             <td>
               <% if (w.active) { %>
-              <button class="btn btn-sm btn-danger" onclick="clearWarn('<%= guild.id %>','<%= w.caseId %>',this)">Clear</button>
-              <% } else { %>
-              <span class="badge badge-muted">Cleared</span>
+              <button class="btn btn-xs btn-danger" onclick="clearWarn('<%= guild.id %>','<%= w.caseId %>',this)">Clear</button>
               <% } %>
             </td>
           </tr>
           <% }); %>
-          <% if (!warns.length) { %><tr><td colspan="6" class="empty-row">No warnings found.</td></tr><% } %>
+          <% if (!warns.length) { %><tr><td colspan="7" class="empty-row">No warnings found.</td></tr><% } %>
         </tbody>
       </table>
     </div>
     <% if (totalPages > 1) { %>
     <div class="pagination">
       <% for (let i = 1; i <= totalPages; i++) { %>
-        <a href="?page=<%= i %>" class="page-btn <%= page === i ? 'active' : '' %>"><%= i %></a>
+        <a href="?page=<%= i %>" class="page-btn <%= page===i?'active':'' %>"><%= i %></a>
       <% } %>
     </div>
     <% } %>
@@ -45,7 +47,7 @@
 
 <div class="tab-panel" id="tab-bans">
   <div class="card">
-    <div class="card-header">Recent Bans <span class="badge"><%= bans.length %></span></div>
+    <div class="card-header"><span class="card-header-icon">🔨</span> Recent Bans <span class="badge badge-danger" style="margin-left:auto"><%= bans.length %></span></div>
     <div class="card-body p-0">
       <table class="table">
         <thead><tr><th>User</th><th>Reason</th></tr></thead>
@@ -53,7 +55,7 @@
           <% bans.forEach(function(b) { %>
           <tr>
             <td><code><%= b.user && b.user.tag ? b.user.tag : b.user && b.user.id ? b.user.id : 'Unknown' %></code></td>
-            <td><%= b.reason || 'No reason' %></td>
+            <td><%= b.reason || 'No reason provided' %></td>
           </tr>
           <% }); %>
           <% if (!bans.length) { %><tr><td colspan="2" class="empty-row">No bans found.</td></tr><% } %>
@@ -65,7 +67,7 @@
 
 <div class="tab-panel" id="tab-mutes">
   <div class="card">
-    <div class="card-header">Active Mutes <span class="badge"><%= mutes.length %></span></div>
+    <div class="card-header"><span class="card-header-icon">🔇</span> Active Mutes <span class="badge badge-warning" style="margin-left:auto"><%= mutes.length %></span></div>
     <div class="card-body p-0">
       <table class="table">
         <thead><tr><th>User ID</th><th>Moderator</th><th>Reason</th><th>Expires</th></tr></thead>
