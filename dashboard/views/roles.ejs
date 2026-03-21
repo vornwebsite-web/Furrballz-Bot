@@ -2,16 +2,19 @@
 
 <form id="roles-form">
 <div class="card">
-  <div class="card-header">Auto Roles</div>
+  <div class="card-header"><span class="card-header-icon">🎭</span> Auto Roles on Join</div>
   <div class="card-body">
-    <p class="form-hint">Roles automatically assigned to new members when they join.</p>
+    <p class="form-hint" style="margin-bottom:16px">These roles are automatically assigned to every new member when they join the server.</p>
     <div class="roles-checkboxes">
       <% roles.forEach(function(r) { %>
       <label class="role-checkbox">
         <input type="checkbox" name="autoRoles" value="<%= r.id %>" <%= (guildDoc.autoRoles||[]).includes(r.id)?'checked':'' %>>
-        <span class="role-pill" style="border-color:<%= r.color %>"><%= r.name %></span>
+        <span class="role-pill" style="border-color:<%= r.color==='#000000'?'var(--border)':r.color %>; color:<%= r.color==='#000000'?'var(--text-secondary)':r.color %>"><%= r.name %></span>
       </label>
       <% }); %>
+      <% if (!roles.length) { %>
+      <p class="form-hint">No manageable roles found.</p>
+      <% } %>
     </div>
   </div>
   <div class="card-footer">
