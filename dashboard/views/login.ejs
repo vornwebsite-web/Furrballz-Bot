@@ -5,25 +5,260 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login — <%= botName %></title>
   <link rel="stylesheet" href="/style.css">
+  <style>
+    /* ── Login page overrides ───────────────────────────────────────── */
+    body.login-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-base);
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Animated background orbs */
+    body.login-page::before,
+    body.login-page::after {
+      content: '';
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.18;
+      pointer-events: none;
+      animation: float 8s ease-in-out infinite;
+    }
+    body.login-page::before {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, #7F77DD, transparent);
+      top: -120px; left: -120px;
+    }
+    body.login-page::after {
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, #5865F2, transparent);
+      bottom: -100px; right: -100px;
+      animation-delay: -4s;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) scale(1); }
+      50%       { transform: translateY(-30px) scale(1.05); }
+    }
+
+    /* Card */
+    .login-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 52px 48px;
+      text-align: center;
+      width: 420px;
+      max-width: 92vw;
+      position: relative;
+      z-index: 1;
+      box-shadow: 0 8px 48px rgba(0,0,0,0.45), 0 0 0 1px rgba(127,119,221,0.08);
+      backdrop-filter: blur(12px);
+    }
+
+    /* Top accent bar */
+    .login-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #7F77DD, #5865F2, #A29BFE);
+      border-radius: 20px 20px 0 0;
+    }
+
+    /* Logo */
+    .login-logo {
+      width: 76px; height: 76px;
+      background: linear-gradient(135deg, rgba(127,119,221,0.2), rgba(88,101,242,0.15));
+      border: 1px solid rgba(127,119,221,0.3);
+      border-radius: 20px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 38px;
+      margin: 0 auto 20px;
+      box-shadow: 0 4px 20px rgba(127,119,221,0.2);
+    }
+
+    .login-title {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+      letter-spacing: -0.3px;
+    }
+
+    .login-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+    }
+
+    /* Features list */
+    .login-features {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 28px;
+      text-align: left;
+    }
+    .login-feature {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 9px 14px;
+    }
+    .login-feature-icon {
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    /* Discord button */
+    .btn-discord {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 14px 24px;
+      background: #5865F2;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+      box-shadow: 0 4px 16px rgba(88,101,242,0.4);
+      letter-spacing: 0.1px;
+    }
+    .btn-discord:hover {
+      background: #4752c4;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(88,101,242,0.5);
+      color: #fff;
+    }
+    .btn-discord:active {
+      transform: translateY(0);
+    }
+
+    .login-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 20px 0;
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+    .login-divider::before,
+    .login-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .login-note {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 18px;
+      line-height: 1.7;
+    }
+
+    /* Error alert */
+    .alert-error {
+      background: var(--error-dim);
+      color: var(--error);
+      border: 1px solid rgba(226,75,74,.3);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 13px;
+      margin-bottom: 20px;
+    }
+
+    /* Stats row */
+    .login-stats {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+    .login-stat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .login-stat-val {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .login-stat-label {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+  </style>
 </head>
 <body class="login-page">
   <div class="login-card">
+
     <div class="login-logo">🐾</div>
     <h1 class="login-title"><%= botName %></h1>
     <p class="login-subtitle">Dashboard for TheFurrballz Hotel</p>
 
-    <% if (locals.query && query.error) { %>
-      <div class="alert alert-error">Authentication failed. Please try again.</div>
+    <% if (locals.error) { %>
+      <div class="alert-error">❌ Authentication failed. Please try again.</div>
     <% } %>
 
-    <a href="/auth/discord" class="btn btn-discord">
-      <svg width="20" height="20" viewBox="0 0 71 55" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right:8px;vertical-align:middle">
+    <div class="login-features">
+      <div class="login-feature">
+        <span class="login-feature-icon">🔨</span>
+        <span>Moderation, tickets, anti-nuke & more</span>
+      </div>
+      <div class="login-feature">
+        <span class="login-feature-icon">⚙️</span>
+        <span>Configure every feature without commands</span>
+      </div>
+      <div class="login-feature">
+        <span class="login-feature-icon">📊</span>
+        <span>Live stats, logs, and server overview</span>
+      </div>
+    </div>
+
+    <a href="/auth/discord" class="btn-discord">
+      <svg width="20" height="20" viewBox="0 0 71 55" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M60.1 4.9A58.8 58.8 0 0 0 45.6.4a40.6 40.6 0 0 0-1.8 3.7 54.4 54.4 0 0 0-16.3 0A40.7 40.7 0 0 0 25.6.4 58.7 58.7 0 0 0 11 5C1.6 19.6-1 33.8.3 47.8a59.2 59.2 0 0 0 18 9.1 44.5 44.5 0 0 0 3.8-6.2 38.5 38.5 0 0 1-6-2.9l1.5-1.1a42.2 42.2 0 0 0 36 0l1.5 1.1a38.4 38.4 0 0 1-6 2.9 44.6 44.6 0 0 0 3.8 6.2 59 59 0 0 0 18-9.1C72 31.6 68.1 17.5 60.1 4.9ZM23.7 39.4c-3.5 0-6.4-3.2-6.4-7.2s2.8-7.2 6.4-7.2 6.5 3.3 6.4 7.2c0 4-2.8 7.2-6.4 7.2Zm23.6 0c-3.5 0-6.4-3.2-6.4-7.2s2.8-7.2 6.4-7.2 6.5 3.3 6.4 7.2c0 4-2.9 7.2-6.4 7.2Z" fill="currentColor"/>
       </svg>
       Login with Discord
     </a>
 
-    <p class="login-note">You must have <strong>Manage Server</strong> permission<br>in the server you want to manage.</p>
+    <div class="login-stats">
+      <div class="login-stat">
+        <span class="login-stat-val">54</span>
+        <span class="login-stat-label">Commands</span>
+      </div>
+      <div class="login-stat">
+        <span class="login-stat-val">321</span>
+        <span class="login-stat-label">Subcommands</span>
+      </div>
+      <div class="login-stat">
+        <span class="login-stat-val">19</span>
+        <span class="login-stat-label">Services</span>
+      </div>
+    </div>
+
+    <p class="login-note">Requires <strong>Manage Server</strong> permission in the server you want to manage.</p>
+
   </div>
   <script src="/theme.js"></script>
 </body>
